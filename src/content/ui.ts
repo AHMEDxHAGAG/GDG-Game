@@ -69,6 +69,7 @@ export const ui = {
     skip: 'تخطّي الكشف',
     resultHeading: 'YOUR PIRATE IDENTITY',
     demoBanner: 'نتيجة تجريبية — الرحلة دي مش بيتم تحليل ردودك فيها.',
+    demoTag: 'نتيجة تجريبية',
     whyHeading: 'ليه الشخصية دي؟',
     sampleExplanationLabel: 'نص توضيحي تجريبي',
     secondaryHeading: 'ممكن يعجبك كمان',

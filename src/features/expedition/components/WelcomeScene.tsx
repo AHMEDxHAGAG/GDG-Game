@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Anchor, Compass, RotateCcw, SkipForward } from 'lucide-react';
 
 import { ui } from '@/content/ui';
@@ -27,12 +27,18 @@ export function WelcomeScene({
 }: WelcomeSceneProps): React.JSX.Element {
   const inputId = useId();
   const [value, setValue] = useState(nickname ?? '');
+  const [syncedNickname, setSyncedNickname] = useState(nickname);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  // Keep the field in sync when a restored session supplies a nickname.
-  useEffect(() => {
+  // Keep the field in sync when a restored session supplies a nickname. This is
+  // the documented "adjust state while rendering" pattern (React docs,
+  // "You Might Not Need an Effect"): it runs only when `nickname` actually
+  // changes identity, re-renders before the DOM is touched, and avoids the
+  // extra paint an effect + setState would cost.
+  if (nickname !== syncedNickname) {
+    setSyncedNickname(nickname);
     setValue(nickname ?? '');
-  }, [nickname]);
+  }
 
   const commitAndStart = () => {
     onNicknameChange(normalizeNickname(value));
@@ -112,7 +118,8 @@ export function WelcomeScene({
         </div>
       </main>
 
-      <footer className="flex items-center justify-center gap-2 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] text-[0.72rem] text-ink-faint">
+      {/* Extra bottom padding clears the fixed "erase session" bar below. */}
+      <footer className="flex items-center justify-center gap-2 px-5 pb-[max(2.75rem,env(safe-area-inset-bottom))] text-[0.72rem] text-ink-faint">
         <Anchor className="size-3.5" aria-hidden="true" />
         <span dir="ltr">{ui.welcome.taglineEn}</span>
       </footer>

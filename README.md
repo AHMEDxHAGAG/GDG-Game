@@ -22,14 +22,20 @@ frontend.
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm run test       # vitest (20 tests)
+npm run test       # vitest (28 tests)
+npm run test:e2e   # playwright (66 tests, builds + serves the app itself)
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint (flat config)
 npm run build      # production build
 npm start          # serve the production build
 ```
 
-Requirements: Node.js `>=20.9.0`.
+Requirements: Node.js `>=20.9.0`. Browser tests need Chromium once:
+`npx playwright install chromium`.
+
+Copy lives in `src/content/ui.ts`; after editing it run
+`python3 tools/check-copy.py`, which rejects stray non-Latin characters that
+would otherwise render as tofu.
 
 ## Environment variables
 
@@ -58,8 +64,12 @@ src/
   content/           # ui.ts (all copy), dialogue/mockScript.ts (7 beats)
   lib/ids.ts         # collision-resistant ids with non-HTTPS fallback
 public/assets/characters/   # production artwork slots (placeholder until then)
+e2e/                        # playwright specs (helpers.ts drives a full voyage)
+src/generated/              # artwork-manifest.ts, written at build time
 docs/AI_INTEGRATION.md      # future engine contract (architectural, no AI)
+docs/AGENT_CONTEXT.md       # handoff: what is verified, what is missing
 tools/check-copy.py         # stray-CJK / replacement-char guard for copy
+tools/generate-artwork-manifest.mjs  # scans public/assets/characters at build
 assests/                    # supplied reference (note the legacy spelling)
 ```
 

@@ -1,0 +1,133 @@
+{
+  "id": "result_artificial_intelligence",
+  "file_name": "ResultCardExample2.png",
+  "page_name_ar": "نتيجة شخصية ساحر الذكاء",
+  "page_name_en": "Result Card — The AI Wizard",
+  "route": "/result/artificial_intelligence",
+  "screenshot": "../references/ResultCardExample2.png",
+  "reference_size_px": {
+    "width": 692,
+    "height": 662
+  },
+  "uses_shared": "../shared-design-state.json",
+  "track_id": "artificial_intelligence",
+  "theme_color": "#66BAFF",
+  "content": {
+    "eyebrow": "شخصيتك هي",
+    "persona_title": "ساحر الذكاء",
+    "track_subtitle": "مسار الذكاء الاصطناعي",
+    "tagline": "أنت تستكشف، تتخيل، وتصنع حلولاً أذكى.",
+    "strength": {
+      "title": "قوتك الفريدة",
+      "description": "دمج الإبداع والتقنية لصناعة حلول ذكية ومبتكرة.",
+      "icon": "brain-circuit"
+    },
+    "traits": {
+      "title": "خصائصك المميزة",
+      "items": [
+        "تبحث دائماً عن طرق جديدة",
+        "تتحمس للتجربة والتعلم",
+        "تفكر خارج الصندوق",
+        "تهتم بتأثير التكنولوجيا على المستقبل"
+      ]
+    },
+    "secondary_track": {
+      "track_id": "data_science",
+      "eyebrow": "المسار المقترح الثانوي",
+      "name": "علم البيانات",
+      "icon": "chart-no-axes-column-increasing",
+      "description": "لديك فضول لفهم الأنماط واكتشاف المعرفة من البيانات."
+    }
+  },
+  "visuals": {
+    "character": "Blue pirate with dark tricorne, goggles/glasses, blue coat with cyan scarf ribbons and glowing circular holographic brain rune held up in hand.",
+    "backdrop": "Midnight blue ship deck and rigging, blue star-speckled sky, glowing lamp near center lower third.",
+    "accent_sections": "Bright blue persona title, translucent royal blue tagline, cyan-edged strength panel and trait bullets, violet icon for data-science secondary card.",
+    "exact_reference_priority": [
+      "AI rune visible",
+      "cyan glow against dark sky",
+      "large blue persona title",
+      "blue unique-strength card",
+      "purple data-science secondary accent"
+    ]
+  },
+  "common_layout": {
+    "layout_reference": "Result screenshot portrays character occupying left 45%, content stacked right with track-colored accents. Mobile version must reorganize to readable vertical sections rather than shrinking screenshot.",
+    "common_header": {
+      "brand": "GDGoC AASTMT ASWAN",
+      "share_button_label": "مشاركة النتيجة",
+      "share_icon": "share-2",
+      "behavior": "Use navigator.share if supported; otherwise copy absolute result link and announce copied state; use actual saved result ID if result is private."
+    },
+    "content_sections": [
+      {
+        "key": "eyebrow",
+        "text": "شخصيتك هي"
+      },
+      {
+        "key": "persona_title",
+        "treatment": "extra-large bold in primary track color"
+      },
+      {
+        "key": "track_subtitle"
+      },
+      {
+        "key": "tagline",
+        "treatment": "theme-colored translucent ribbon"
+      },
+      {
+        "key": "unique_strength",
+        "label": "قوتك الفريدة",
+        "treatment": "outlined card with large track icon"
+      },
+      {
+        "key": "traits",
+        "label": "خصائصك المميزة",
+        "treatment": "4 bullet traits with colored diamond markers"
+      },
+      {
+        "key": "secondary_track",
+        "label": "المسار المقترح الثانوي",
+        "treatment": "bordered lower card with icon, title and description"
+      }
+    ],
+    "mobile_layout": {
+      "container": "Single-column scrollable portrait result (not a flattened screenshot).",
+      "topbar": "Logo top-start, share button top-end with 44px hit area; both retain sufficient contrast.",
+      "hero": "Show pirate character as standalone illustrated figure in upper hero stage (~240-350px), with dark gradient behind text. Persona title can be above or immediately after artwork as long as readability is preserved.",
+      "copy": "Stack tagline, strength, traits and secondary card with 12-20px vertical gaps; max 100% available width, at least 16px side padding.",
+      "text": "Use centered title but section descriptions right-aligned RTL; avoid text on top of bright character silhouette.",
+      "share": "Provide optional fixed lower safe-area share CTA only if it does not obscure content."
+    },
+    "tablet_desktop_layout": {
+      "min_two_column_width_px": 768,
+      "illustration": "left ~43-48% and content right ~52-57%",
+      "header": "Across both columns",
+      "copy": "Constrain to comfortable line length",
+      "scene": "Preserve dock, pirate flag, lantern and ship silhouettes as subtle atmosphere."
+    },
+    "share_card": {
+      "suggested_export_size_px": {
+        "width": 1080,
+        "height": 1350
+      },
+      "rendering": "If adding save/share image, compose purpose-built poster from approved assets and real text; do not screenshot offscreen content prematurely.",
+      "privacy": "Do not share response text or profile identifiers by default."
+    },
+    "actions": {
+      "share": "Web Share API or copy URL",
+      "restart_quiz": "Optional visible CTA after results",
+      "explore_tracks": "Optional /tracks link"
+    },
+    "accessibility": [
+      "Heading order h1 for persona and h2 for sections.",
+      "Character art decorative unless it communicates unique information.",
+      "Track meaning must be communicated via name/icon, not only color."
+    ]
+  },
+  "assets_required": [
+    "assets/characters/ai-pirate.png",
+    "assets/backgrounds/result-artificial-intelligence.webp",
+    "assets/branding/gdgoc-aastmt-logo.svg"
+  ]
+}

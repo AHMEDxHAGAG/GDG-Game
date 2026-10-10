@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import QRCode from 'qrcode';
 
 import { ui } from '@/content/ui';
@@ -9,14 +9,25 @@ import { SITE_URL, site } from '@/config/site';
 import { CharacterPortrait } from '@/components/characters/CharacterPortrait';
 import { ExpeditionBrand, NauticalBackground } from '@/components/shared/NauticalBackground';
 
+/**
+ * Reads the runtime origin without an effect.
+ *
+ * `useSyncExternalStore` gives us a hydration-safe value: the server snapshot
+ * is empty (so SSR and the first client render agree, no hydration mismatch),
+ * and the client snapshot supplies `window.location.origin` immediately after
+ * hydration — without a `setState` in an effect.
+ */
+function useRuntimeOrigin(): string {
+  return useSyncExternalStore(
+    () => () => {},
+    () => (typeof window === 'undefined' ? '' : window.location.origin),
+    () => '',
+  );
+}
+
 function useJoinUrl(): string {
-  const [url, setUrl] = useState(SITE_URL || '');
-  useEffect(() => {
-    if (!SITE_URL && typeof window !== 'undefined') {
-      setUrl(window.location.origin);
-    }
-  }, []);
-  return url || 'GDGoC · AASTMT Aswan';
+  const origin = useRuntimeOrigin();
+  return SITE_URL || origin || 'GDGoC · AASTMT Aswan';
 }
 
 /**
@@ -27,29 +38,31 @@ function useJoinUrl(): string {
  */
 export function PresentationScreen(): React.JSX.Element {
   const joinUrl = useJoinUrl();
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  // The QR is stored keyed by the URL it was generated from, so a stale entry
+  // can never be rendered against a different destination — no reset needed.
+  const [qr, setQr] = useState<{ url: string; dataUrl: string } | null>(null);
 
   useEffect(() => {
+    if (!joinUrl.startsWith('http')) return;
     let cancelled = false;
-    if (!joinUrl.startsWith('http')) {
-      setQrDataUrl(null);
-      return;
-    }
     QRCode.toDataURL(joinUrl, {
       width: 480,
       margin: 2,
       color: { dark: '#24201a', light: '#fbf3df' },
     })
-      .then((url) => {
-        if (!cancelled) setQrDataUrl(url);
+      .then((dataUrl) => {
+        if (!cancelled) setQr({ url: joinUrl, dataUrl });
       })
       .catch(() => {
-        if (!cancelled) setQrDataUrl(null);
+        // Leave `qr` untouched: the derived lookup below simply won't match,
+        // so the textual fallback renders instead.
       });
     return () => {
       cancelled = true;
     };
   }, [joinUrl]);
+
+  const qrDataUrl = qr && qr.url === joinUrl ? qr.dataUrl : null;
 
   return (
     <NauticalBackground withCompass>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 
+import { hasArtwork } from '@/generated/artwork-manifest';
 import type { CharacterDefinition } from '@/features/characters/types';
 import { PiratePlaceholder } from './PiratePlaceholder';
 
@@ -19,7 +20,8 @@ export interface CharacterArtworkProps {
  * to the designed placeholder when it is not.
  *
  * Dropping `public/assets/characters/<track>.png` into place is enough — the
- * `onError` path also covers a wrong path or a stale build, so the UI never
+ * build-time manifest picks it up automatically. The `onError` path stays as a
+ * second line of defence for a wrong path or a stale build, so the UI never
  * shows a broken image during a live event.
  */
 export function CharacterArtwork({
@@ -30,9 +32,12 @@ export function CharacterArtwork({
 }: CharacterArtworkProps): React.JSX.Element {
   const [failed, setFailed] = useState(false);
   const { artwork } = character;
-  const hasArtwork = Boolean(artwork.src) && !failed;
+  // Skip the request entirely when no file exists: a guaranteed 404 would cost
+  // a round trip and flash a broken image before the fallback rendered.
+  const canRenderArtwork = hasArtwork(character.id);
+  const showArtwork = Boolean(artwork.src) && canRenderArtwork && !failed;
 
-  if (!hasArtwork) {
+  if (!showArtwork) {
     return (
       <span className={className} data-artwork="placeholder">
         <PiratePlaceholder

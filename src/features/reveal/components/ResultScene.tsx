@@ -36,7 +36,7 @@ export function ResultScene({ result }: ResultSceneProps): React.JSX.Element {
   return (
     <NauticalBackground withCompass>
       <main
-        className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+        className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(2.75rem,env(safe-area-inset-bottom))]"
         data-scene="result"
       >
         <p

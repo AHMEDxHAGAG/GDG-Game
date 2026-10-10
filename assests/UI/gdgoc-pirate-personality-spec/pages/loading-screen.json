@@ -1,0 +1,83 @@
+{
+  "id": "loading_screen",
+  "file_name": "LoadingScreen.png",
+  "page_name_ar": "جاري تحليل إجاباتك",
+  "page_name_en": "Loading / Analyzing Answers",
+  "route": "/loading",
+  "screenshot": "../references/LoadingScreen.png",
+  "reference_size_px": {
+    "width": 588,
+    "height": 662
+  },
+  "uses_shared": "../shared-design-state.json",
+  "goal": "Communicate in-progress analysis of quiz responses with a maritime animated scene.",
+  "content": {
+    "headline": "جاري تحليل إجاباتك...",
+    "description": "قريباً ستكتشف الشخصية التي تناسبك ضمن عالم GDGoC",
+    "status_label_for_assistive_tech": "جاري تحليل الإجابات، برجاء الانتظار"
+  },
+  "composition": {
+    "scene": "Vertical view onto moonlit sea; rusty pirate galleon with red sails near upper-left; bright moon behind clouds upper-right; mountains at horizon.",
+    "foreground": "Oversized ripped parchment horizontally centered in the lower middle; lantern hanging on image-right and compass embedded lower-left; treasure chest, dock timbers, ropes and rocks along bottom.",
+    "status_panel": "Dark ink bold Arabic headline, a rounded long progress track with blue fill, supporting Arabic description beneath.",
+    "depth": "Background sea and ship behind, parchment and props in foreground."
+  },
+  "components": [
+    {
+      "type": "maritime_night_scene",
+      "layers": [
+        "sky_moon_clouds",
+        "mountains",
+        "water_reflections",
+        "pirate_ship",
+        "wooden_dock"
+      ]
+    },
+    {
+      "type": "parchment_panel",
+      "centered": true,
+      "heading": "جاري تحليل إجاباتك...",
+      "body": "قريباً ستكتشف الشخصية التي تناسبك ضمن عالم GDGoC"
+    },
+    {
+      "type": "analysis_progress",
+      "style": "cream/gray track, bright blue filling bar, dark ink outline",
+      "mode": "indeterminate until verified progress reported",
+      "example_reference_visual_fill_fraction": 0.38,
+      "accessibility": "aria-busy on screen region; role=progressbar with aria-valuenow only when percent is real"
+    },
+    {
+      "type": "decorative_props",
+      "props": [
+        "left-brass-compass",
+        "right-hanging-lantern",
+        "wooden-treasure-chest",
+        "ropes"
+      ]
+    }
+  ],
+  "mobile_layout": {
+    "background": "Cover portrait view, sea horizon in upper third; keep ship and moon visible without stretching.",
+    "parchment": "Width 85-92vw, place between ~44% and 77% of viewport; auto-grow with text.",
+    "text": "Center, heading 20-24px, description 14-16px, legible on cream.",
+    "progress": "80-90% width within parchment; 12-16px height.",
+    "foreground_props": "At edges and behind panel; no obstruction to text.",
+    "height": "100dvh minimum with scroll safety on very short screens."
+  },
+  "state_rules": {
+    "on_entry": "Start or continue result processing; loading screen should not be entered just to fake a waiting animation.",
+    "on_complete": "Route to result/{knownTrackId} once valid data arrives.",
+    "progress": "If backend exposes 0..100 validated progress, use it; otherwise animate an indeterminate bar, not a fabricated numeric percentage.",
+    "on_error": "Show short Arabic error and retry/back button within parchment.",
+    "timeout": "Do not silently hang; if request is stalled show actionable error.",
+    "motion": "Ship bob 2-3px and water sparkle very subtly; pause on reduced motion."
+  },
+  "assets_required": [
+    "assets/backgrounds/moonlit-sea.webp",
+    "assets/props/ship-red-sails.png",
+    "assets/props/compass.png",
+    "assets/props/lantern.png",
+    "assets/props/treasure-chest.png",
+    "assets/props/parchment-panel.png"
+  ]
+}

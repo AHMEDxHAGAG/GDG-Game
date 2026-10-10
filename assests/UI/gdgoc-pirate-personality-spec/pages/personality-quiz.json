@@ -1,0 +1,156 @@
+{
+  "id": "personality_quiz",
+  "file_name": "PersonalityQuiz.png",
+  "page_name_ar": "اختبار الشخصية — الأسئلة",
+  "page_name_en": "Personality Quiz / Question",
+  "route": "/quiz",
+  "screenshot": "../references/PersonalityQuiz.png",
+  "reference_size_px": {
+    "width": 570,
+    "height": 826
+  },
+  "uses_shared": "../shared-design-state.json",
+  "goal": "Present eight Arabic personality-discovery questions as single-select multiple-choice (MCQ) cards within the pirate parchment interface; capture exactly one selected option per question.",
+  "screenshot_composition": {
+    "orientation": "portrait",
+    "background": "Very dark wooden cabin with warm hanging lantern at top edges, a little sail/map in bottom-right.",
+    "top": "Arabic question counter above circular progress line.",
+    "center": "Large torn parchment question text on left with orange pirate captain illustration overlapping the right side of parchment but not covering main question.",
+    "answers": "Four cream beveled rectangular choices stacked vertically, each with colored icon on image-left and dark Arabic text.",
+    "footer": "Dark outlined previous button bottom left, bright red next button bottom right."
+  },
+  "reference_example": {
+    "question_number": 3,
+    "question_count": 8,
+    "counter_text": "السؤال ٣ من ٨",
+    "question_text": "يواجه فريقك مشكلة في المنصة الجامعية التي يستخدمها مئات الطلاب ما هو أول شيء تفكر في القيام به؟",
+    "visible_answers": [
+      {
+        "id": "engineer",
+        "track_id": "software_engineering",
+        "icon": "gear",
+        "color": "#F45361",
+        "text": "أبني حلاً تقنياً موثوقاً يصلح المشكلة من جذورها."
+      },
+      {
+        "id": "ai",
+        "track_id": "artificial_intelligence",
+        "icon": "brain-circuit",
+        "color": "#66BAFF",
+        "text": "أستخدم الذكاء الاصطناعي لتقديم حلول ذكية ومبتكرة."
+      },
+      {
+        "id": "web",
+        "track_id": "web_development",
+        "icon": "code-xml",
+        "color": "#FFA35D",
+        "text": "أصمم واجهة سهلة الاستخدام تجعل التجربة أفضل للطلاب."
+      },
+      {
+        "id": "data",
+        "track_id": "data_science",
+        "icon": "chart-no-axes-column-increasing",
+        "color": "#C27BFF",
+        "text": "أحلل البيانات لأفهم سبب المشكلة وأجد الأنماط فيها."
+      }
+    ],
+    "reference_inconsistency": "Counter says question 3 of 8, but illustrated dots appear fewer than eight; implementation should show 8 steps if count is eight. Cybersecurity is not represented among this example question options; do not infer a rule from this one question."
+  },
+  "shared_visual_parts": [
+    {
+      "type": "question_progress",
+      "position": "top center",
+      "counter": "السؤال {n} من ٨",
+      "marker_total": 8,
+      "completed_color": "#E8555D",
+      "pending_color": "#70718B",
+      "accessibility": "Announce السؤال ٣ من ٨, 3/8 progress"
+    },
+    {
+      "type": "question_parchment",
+      "style": "Cream torn irregular scroll, distressed corners",
+      "content_alignment": "right for Arabic RTL",
+      "art_overhang": "Orange captain visually overlaps parchment right edge on screenshot, but text area must have protected inset"
+    },
+    {
+      "type": "pirate_character",
+      "character_id": "web_development",
+      "pose": "holding hat brim, orange ribbons",
+      "desktop_overlap": "right of parchment"
+    },
+    {
+      "type": "navigation_controls",
+      "previous": {
+        "text": "السابق",
+        "icon": "arrow-right or direction-aware back",
+        "action": "go previous if n > 1"
+      },
+      "next": {
+        "text": "التالي",
+        "icon": "arrow-left or direction-aware forward",
+        "action": "validate current answer and go next/submit"
+      }
+    }
+  ],
+  "mobile_layout": {
+    "usable_width": "viewport minus 28-32px side padding",
+    "lanterns": "Two lanterns near top with adequate safe-area spacing; set decorative pointer-events none",
+    "progress": "Top 90-120px area depending on screen",
+    "question_panel": "Full width; variable height. On smaller viewports position pirate to top-right or just below parchment so it does not cover Arabic text.",
+    "answers": "Four full-width minimum-68px option cards stacked with 10–12px gap; keep each card selectable, allow multiline Arabic labels, and display selection clearly.",
+    "buttons": "Two equally accessible bottom buttons within page flow (may sticky bottom with safe-area padding); no fixed covering of answer controls.",
+    "overflow": "Allow vertical scrolling on short screens and with large text; keep all four options and action buttons reachable without overlapping fixed illustrations."
+  },
+  "desktop_layout": {
+    "container_max_width_px": 680,
+    "center": "Quiz occupies focused narrow panel on broad background; parchment and pirate remain foreground focal points."
+  },
+  "validation_and_accessibility": [
+    "Use a semantic fieldset/legend and four native radio inputs (styled as selectable parchment cards).",
+    "Only one answer may be selected per question; each option is keyboard and touch accessible.",
+    "Disable Next until an option is selected; allow users to change selection before submitting.",
+    "Announce question changes using focus to the question heading or aria-live.",
+    "Returning to a previous question must restore its selected option.",
+    "Hide decorative pirate images and lanterns from screen readers; respect RTL and 44px minimum touch targets.",
+    "Do not hardcode questions 1, 2, or 4–8 from the screenshot; mark them awaiting the approved question bank."
+  ],
+  "assets_required": [
+    "assets/backgrounds/cabin-quiz.webp",
+    "assets/props/lantern-left.png",
+    "assets/props/lantern-right.png",
+    "assets/props/parchment-panel.png",
+    "assets/characters/web-pirate.png"
+  ],
+  "interaction": {
+    "type": "single_select_multiple_choice",
+    "only_supported_mode": true,
+    "options_per_question": 4,
+    "option_source": "Approved Arabic question-bank data; do not fabricate unsupplied questions.",
+    "layout": "Four tall parchment option cards in a vertical column as shown in the screenshot; each option has a distinctive circular track/icon accent and right-aligned Arabic RTL label.",
+    "selection_behavior": {
+      "single_select": true,
+      "initial_selection": null,
+      "on_select": "Set responses[currentQuestionId].optionId to tapped optionId, deselect previous selection, and reveal a distinct selected style.",
+      "selected_style": "Visible crimson/gold or current accent outline, slight raised pixel-frame, optional check icon; preserve contrast and avoid relying on color alone.",
+      "on_reselect": "Allow changing the answer until submitted.",
+      "accessibility": "Use fieldset/legend and native radio inputs styled as cards (or equivalent accessible radiogroup/radio with keyboard arrow navigation). Label entire card as a touch target."
+    },
+    "navigation": {
+      "next_label": "التالي",
+      "previous_label": "السابق",
+      "next_disabled_until_selected": true,
+      "back_restores_selection": true,
+      "final_step_label": "اكتشف شخصيتي",
+      "final_action": "When all eight questions have valid optionIds, submit only approved structured responses to the provided analysis/scoring interface and navigate to /loading.",
+      "no_scoring_implementation": "Do not invent track weights, AI behavior, or inferred personality result."
+    },
+    "persist": "Store one {questionId, optionId} pair per question within the active quiz session.",
+    "forbidden": [
+      "free-text input",
+      "chat composer",
+      "textarea",
+      "message-bubble answers",
+      "multi-select checkboxes"
+    ]
+  }
+}

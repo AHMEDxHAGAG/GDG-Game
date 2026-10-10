@@ -138,7 +138,11 @@ export class MockConversationEngine implements ConversationEngine {
     }
 
     const cursor = Math.max(1, readCursor(context.engineState));
-    const turn = MOCK_SCRIPT[Math.min(cursor, MOCK_SCRIPT.length - 1)]!;
+    // Index of the turn we are about to show. Script index 0 is the intro and
+    // indices 1..n are the scenarios, so `turnIndex` doubles as the ordinal of
+    // the scenario being posed.
+    const turnIndex = Math.min(cursor, MOCK_SCRIPT.length - 1);
+    const turn = MOCK_SCRIPT[turnIndex]!;
     const isClosing = turn.phase === 'completed';
 
     const messages: ConversationMessage[] = [];
@@ -154,7 +158,11 @@ export class MockConversationEngine implements ConversationEngine {
     return {
       messages,
       phase: turn.phase,
-      progress: this.progressFor(isClosing ? cursor : cursor + 1),
+      // `asked` counts scenarios the captain has actually posed, so the meter
+      // never runs ahead of the conversation and never exceeds `expected`.
+      progress: this.progressFor(
+        isClosing ? this.scenarioCount : Math.min(turnIndex, this.scenarioCount),
+      ),
       engineState: withCursor(isClosing ? cursor : cursor + 1),
       awaitsReply: !isClosing,
     };

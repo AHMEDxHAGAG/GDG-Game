@@ -4,16 +4,20 @@
   "private": true,
   "description": "GDGoC AASTMT Aswan — The Pirate Identity Expedition. A mobile-first, chat-driven pirate personality adventure (conversation engine mocked, AI-ready boundary).",
   "scripts": {
+    "predev": "node tools/generate-artwork-manifest.mjs",
     "dev": "next dev",
+    "prebuild": "node tools/generate-artwork-manifest.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "pretest": "node tools/generate-artwork-manifest.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "gsap": "^3.15.0",
+    
     "html-to-image": "^1.11.13",
     "lucide-react": "^1.54.0",
     "next": "^16.4.0",

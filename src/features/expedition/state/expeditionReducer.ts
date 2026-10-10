@@ -48,10 +48,16 @@ export interface ExpeditionState {
   readonly inFlightMessageId: string | null;
   readonly startedAt: number | null;
   readonly updatedAt: number;
+  /**
+   * True once the one-shot client restore pass has run (restored a stored
+   * voyage, or found nothing). Runtime-only: never persisted, because a fresh
+   * page load always has to re-check storage before it may persist again.
+   */
+  readonly hydrated: boolean;
 }
 
 export type ExpeditionAction =
-  | { type: 'session/hydrate'; payload: ExpeditionState }
+  | { type: 'session/hydrate'; payload: ExpeditionState | null }
   | { type: 'nickname/set'; nickname: string | null; at: number }
   | { type: 'expedition/start'; at: number }
   | { type: 'expedition/resume'; at: number }
@@ -79,6 +85,7 @@ export function createInitialState(now = Date.now()): ExpeditionState {
     inFlightMessageId: null,
     startedAt: null,
     updatedAt: now,
+    hydrated: false,
   };
 }
 
@@ -98,6 +105,8 @@ export function expeditionReducer(
 ): ExpeditionState {
   switch (action.type) {
     case 'session/hydrate':
+      // Nothing stored: just mark the restore pass as done so it never repeats.
+      if (action.payload === null) return { ...state, hydrated: true };
       // Land back on welcome but keep the stored voyage so the welcome screen
       // can offer "continue vs restart". The resume intent re-enters via
       // `expedition/resume` without wiping messages or the engine cursor.
@@ -108,6 +117,7 @@ export function expeditionReducer(
         pending: null,
         failedOperation: null,
         inFlightMessageId: null,
+        hydrated: true,
       };
 
     case 'nickname/set':
@@ -281,7 +291,9 @@ export function expeditionReducer(
       };
 
     case 'expedition/restart':
-      return createInitialState(action.at);
+      // A restart is not a fresh page load: the restore pass already ran, so it
+      // must not run (and cannot find anything) a second time.
+      return { ...createInitialState(action.at), hydrated: state.hydrated };
 
     default:
       return state;

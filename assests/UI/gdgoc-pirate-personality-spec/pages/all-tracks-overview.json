@@ -1,0 +1,95 @@
+{
+  "id": "all_tracks_overview",
+  "file_name": "AllResultCardsInspirationEx.png",
+  "page_name_ar": "مسارات GDGoC",
+  "page_name_en": "All Five Tracks / Persona Gallery",
+  "route": "/tracks",
+  "screenshot": "../references/AllResultCardsInspirationEx.png",
+  "reference_size_px": {
+    "width": 968,
+    "height": 661
+  },
+  "uses_shared": "../shared-design-state.json",
+  "goal": "Introduce the five paths as collectible pirate-persona cards, available as browseable overview.",
+  "content": {
+    "title": "مسارات GDGoC",
+    "subtitle": "خمس شخصيات، هدف واحد: نبني معًا مجتمع أقوى"
+  },
+  "reference_composition": {
+    "scene": "Near-black wood ship interior, title/subtitle centered at top, 5 tall illustrated cards placed in one horizontal lineup.",
+    "card_visual_order_left_to_right": [
+      "software_engineering",
+      "artificial_intelligence",
+      "web_development",
+      "data_science",
+      "cybersecurity"
+    ],
+    "card_geometry": "tall 1:2.5-ish slender rounded-corner playing cards with bright colored outline",
+    "character_position": "upper ~70% each card, full body pirate character clipped within tinted frame",
+    "bottom_region": "dark transparent gradient with neon track icon above two-line Arabic label",
+    "deck_details": "Small chipped decorative pixel corners and faint silhouette background per card."
+  },
+  "cards": [
+    {
+      "track_id": "software_engineering",
+      "title_ar": "هندسة البرمجيات",
+      "icon": "gear",
+      "color": "#F45361",
+      "character_asset": "assets/characters/software-engineering-pirate.png"
+    },
+    {
+      "track_id": "artificial_intelligence",
+      "title_ar": "الذكاء الاصطناعي",
+      "icon": "brain-circuit",
+      "color": "#66BAFF",
+      "character_asset": "assets/characters/ai-pirate.png"
+    },
+    {
+      "track_id": "web_development",
+      "title_ar": "تطوير الويب",
+      "icon": "code-xml",
+      "color": "#FFA35D",
+      "character_asset": "assets/characters/web-pirate.png"
+    },
+    {
+      "track_id": "data_science",
+      "title_ar": "علم البيانات",
+      "icon": "chart-no-axes-column-increasing",
+      "color": "#C27BFF",
+      "character_asset": "assets/characters/data-science-pirate.png"
+    },
+    {
+      "track_id": "cybersecurity",
+      "title_ar": "الأمن السيبراني",
+      "icon": "shield-check",
+      "color": "#78DAA0",
+      "character_asset": "assets/characters/cybersecurity-pirate.png"
+    }
+  ],
+  "interaction": {
+    "card_click": "Navigate to available /result/:trackId or a generic track introduction when result copy has not been approved. Do not falsely display a personality test result simply because a card was clicked.",
+    "on_hover": "Lift 4px, rim brightens",
+    "on_focus": "High contrast focus ring",
+    "selected": "Distinct highlight if representing actual user result."
+  },
+  "mobile_layout": {
+    "intro": "Centered heading and one-to-three lines of subtitle at top with side gutters.",
+    "card_display": "Horizontal scroll-snap carousel of roughly 68-76vw wide tall cards; one central card fully visible with side preview.",
+    "alternative": "Accessible all-tracks vertical list or toggle for people who do not want horizontal scrolling.",
+    "card_height": "Use aspect ratio ~0.62 (wide enough to keep Arabic title legible); clamp maximum around 500px.",
+    "navigation": "Visible swipe hint, 5 progress bullets and/or previous/next controls; do not trap vertical scrolling.",
+    "illustrations": "Keep face and hands inside card when resized; bottom title region never covered by character."
+  },
+  "desktop_layout": {
+    "columns": 5,
+    "min_viewport_for_five_columns_px": 960,
+    "gap_px": 12,
+    "card_max_width_px": 185,
+    "card_min_height_px": 420,
+    "centered_on_dark_deck": true
+  },
+  "assets_required": [
+    "assets/backgrounds/dark-ship-interior.webp",
+    "assets/characters/{all-five-track-characters}.png"
+  ]
+}

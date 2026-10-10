@@ -164,4 +164,46 @@ describe('expeditionReducer', () => {
     expect(restarted.phase).toBe('welcome');
     expect(hasResumableSession(createInitialState())).toBe(false);
   });
+
+  describe('hydration pass', () => {
+    it('marks hydrated without restoring anything when storage is empty', () => {
+      const initial = createInitialState(1000);
+      expect(initial.hydrated).toBe(false);
+      const hydrated = expeditionReducer(initial, { type: 'session/hydrate', payload: null });
+      expect(hydrated.hydrated).toBe(true);
+      expect(hydrated.phase).toBe('welcome');
+      expect(hydrated.messages).toHaveLength(0);
+    });
+
+    it('restores a stored voyage onto the welcome screen, flagged hydrated', () => {
+      const stored = {
+        ...createInitialState(900),
+        phase: 'result' as const,
+        nickname: 'Lila',
+        messages: [
+          { id: 'm1', role: 'player' as const, text: 'هاي', createdAt: 900 },
+        ],
+      };
+      const hydrated = expeditionReducer(createInitialState(1000), {
+        type: 'session/hydrate',
+        payload: stored,
+      });
+      expect(hydrated.hydrated).toBe(true);
+      // Lands on welcome so the screen can offer continue-vs-restart…
+      expect(hydrated.phase).toBe('welcome');
+      // …without discarding the voyage itself.
+      expect(hydrated.nickname).toBe('Lila');
+      expect(hydrated.messages).toHaveLength(1);
+    });
+
+    it('stays hydrated across a restart so storage is never re-read', () => {
+      const hydrated = expeditionReducer(createInitialState(1000), {
+        type: 'session/hydrate',
+        payload: null,
+      });
+      const restarted = expeditionReducer(hydrated, { type: 'expedition/restart', at: 1001 });
+      expect(restarted.phase).toBe('welcome');
+      expect(restarted.hydrated).toBe(true);
+    });
+  });
 });

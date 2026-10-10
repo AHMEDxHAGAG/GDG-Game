@@ -1,0 +1,450 @@
+{
+  "schema_version": "1.0.0",
+  "document_type": "shared_design_and_app_state",
+  "project": {
+    "id": "gdgoc-discover-your-personality",
+    "title_ar": "اكتشف شخصيتك",
+    "title_en": "Discover Your Personality",
+    "organization": "GDGoC AASTMT Aswan",
+    "purpose": "Mobile-first Arabic pirate-persona track-discovery experience for a university orientation; visuals should follow the supplied screenshots without replacing real UI with screenshot images.",
+    "platform": "Responsive web/PWA-ready",
+    "locales": {
+      "default": "ar",
+      "supported": [
+        "ar"
+      ],
+      "document_lang": "ar",
+      "document_dir": "rtl",
+      "mixed_language_instruction": "Wrap English/acronyms (GDGoC, Builder, AASTMT) in dir=ltr or unicode bidi isolation; keep Arabic natural and correctly joined."
+    },
+    "target_primary_viewport": "390x844 CSS px",
+    "routes": {
+      "landing": "/",
+      "quiz": "/quiz",
+      "loading": "/loading",
+      "result": "/result/:trackId",
+      "tracks": "/tracks"
+    }
+  },
+  "reference_usage": {
+    "provided_images_are": "visual-only reference screenshots; NOT production-ready cutouts, sprite sheets, or page backgrounds",
+    "never_do": [
+      "Do not put screenshots behind transparent hotspots.",
+      "Do not rasterize Arabic headlines/buttons into static page screenshots.",
+      "Do not invent missing quiz questions or pretend a personality inference algorithm exists.",
+      "Do not use blurry low-resolution enlargements of reference cards as production artwork."
+    ],
+    "asset_priority": [
+      "Existing project local artwork if present",
+      "User-provided transparent pixel-art pirates/background layers",
+      "New original pixel-art matching the provided silhouettes/palette if supplied later",
+      "CSS atmospheric fallback, while preserving readable functionality"
+    ],
+    "asset_missing_behavior": "Use an explicit non-blocking placeholder and document missing illustration files; do not silently use screenshot crops for responsive layouts."
+  },
+  "visual_direction": {
+    "art_style": "Polished high-density pixel-art game interface, anime-inspired pirates, hand-crafted maritime props",
+    "visual_keywords": [
+      "retro pirate RPG",
+      "nighttime harbor",
+      "dark navy",
+      "warm glowing lanterns",
+      "antique parchment",
+      "pixelated frame corners",
+      "weathered wood",
+      "small rune-like glow effects",
+      "cinematic yet accessible"
+    ],
+    "mood": "Adventurous, welcoming, energetic; not childish or photorealistic",
+    "pixel_art_handling": "Use image-rendering:pixelated for intentionally low-res source art; avoid globally pixelating text or high-resolution assets."
+  },
+  "design_tokens": {
+    "colors": {
+      "background": "#090F22",
+      "background_deep": "#090B17",
+      "surface": "#151827",
+      "surface_tinted": "#201B27",
+      "surface_border": "#656077",
+      "text_primary": "#FFF4E5",
+      "text_secondary": "#D9D8E3",
+      "ink": "#20161A",
+      "parchment": "#F3D4A8",
+      "parchment_light": "#FFE6BD",
+      "parchment_edge": "#A36B46",
+      "wood": "#392019",
+      "wood_bright": "#67402B",
+      "accent_red": "#B72F30",
+      "accent_red_high": "#E24E45",
+      "accent_gold": "#FFD28A",
+      "lantern_light": "#FFB961",
+      "sea_blue": "#123A68",
+      "focus": "#9AD8FF",
+      "progress_inactive": "#6A6A83",
+      "tracks": "refer to tracks dictionary"
+    },
+    "typography": {
+      "headings_ar": [
+        "Cairo",
+        "Tajawal",
+        "sans-serif"
+      ],
+      "body_ar": [
+        "Tajawal",
+        "Cairo",
+        "sans-serif"
+      ],
+      "brand_en": [
+        "Space Grotesk",
+        "system-ui",
+        "sans-serif"
+      ],
+      "notes": "Screenshot art suggests blocky/pixel lettering, but live Arabic typography must remain legible and properly shaped. Use a licensed Arabic pixel font only if it renders correctly.",
+      "mobile_sizes_px": {
+        "hero_title": {
+          "min": 34,
+          "max": 52
+        },
+        "page_title": {
+          "min": 24,
+          "max": 32
+        },
+        "section_title": {
+          "min": 19,
+          "max": 25
+        },
+        "body": {
+          "min": 15,
+          "max": 17
+        },
+        "small": {
+          "min": 12,
+          "max": 14
+        },
+        "button": {
+          "min": 18,
+          "max": 21
+        }
+      },
+      "line_heights": {
+        "hero": 1.25,
+        "heading": 1.3,
+        "body": 1.65
+      }
+    },
+    "spacing_px": {
+      "2xs": 4,
+      "xs": 8,
+      "sm": 12,
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "2xl": 40
+    },
+    "radii_px": {
+      "frame": 12,
+      "panel": 7,
+      "button": 7,
+      "pill": 999
+    },
+    "border_style": {
+      "primary": "2px warm dark outline with small stepped/chipped/pixel corners",
+      "implementation": "Prefer nine-slice art or CSS pseudo-elements for RPG frame corners; preserve actual button HTML, focus, interaction.",
+      "shadows": [
+        "0 8px 24px rgba(0,0,0,.35)",
+        "0 0 26px rgba(255,177,95,.12)"
+      ]
+    },
+    "motion": {
+      "duration_ms": {
+        "instant": 110,
+        "fast": 180,
+        "standard": 260,
+        "slow": 450
+      },
+      "easing": "ease-out",
+      "ornamental_motion": [
+        "Lantern flicker subtly",
+        "Hero ship/parallax drift <=6px",
+        "Character idle float <=4px",
+        "Progress bar shimmer only when indeterminate"
+      ],
+      "reduced_motion": "Disable looping float/flicker/parallax and replace progress animation with static state when prefers-reduced-motion."
+    }
+  },
+  "track_themes": {
+    "software_engineering": {
+      "name_ar": "هندسة البرمجيات",
+      "name_en": "Software Engineering",
+      "character_title_ar": "المهندس القائد",
+      "colors": {
+        "primary": "#F45361",
+        "bright": "#FF6B75",
+        "dark": "#3D101E",
+        "glow": "rgba(255,77,101,0.32)"
+      },
+      "icon": "gear",
+      "character_asset": "assets/characters/software-engineering-pirate.png",
+      "character_description": "Red-coated pirate engineer, black and red tricorne, practical leather straps and boots, anime pixel-art shading",
+      "secondary_track": "web_development"
+    },
+    "artificial_intelligence": {
+      "name_ar": "الذكاء الاصطناعي",
+      "name_en": "Artificial Intelligence",
+      "character_title_ar": "ساحر الذكاء",
+      "colors": {
+        "primary": "#66BAFF",
+        "bright": "#46A8FF",
+        "dark": "#0C2C64",
+        "glow": "rgba(53,148,255,0.38)"
+      },
+      "icon": "brain-circuit",
+      "character_asset": "assets/characters/ai-pirate.png",
+      "character_description": "Blue-coated bespectacled pirate magician holding bright holographic neon-blue AI orb, cyan trim, dramatic flowing cape",
+      "secondary_track": "data_science"
+    },
+    "web_development": {
+      "name_ar": "تطوير الويب",
+      "name_en": "Web Development",
+      "character_title_ar": null,
+      "colors": {
+        "primary": "#FFA35D",
+        "bright": "#FFB06D",
+        "dark": "#56270D",
+        "glow": "rgba(255,134,54,0.32)"
+      },
+      "icon": "code-xml",
+      "character_asset": "assets/characters/web-pirate.png",
+      "character_description": "Orange-coated central pirate captain, dark hat with orange plume, bold confident pose",
+      "secondary_track": null
+    },
+    "data_science": {
+      "name_ar": "علم البيانات",
+      "name_en": "Data Science",
+      "character_title_ar": null,
+      "colors": {
+        "primary": "#C27BFF",
+        "bright": "#D184FF",
+        "dark": "#30124C",
+        "glow": "rgba(184,90,255,0.35)"
+      },
+      "icon": "chart-no-axes-column-increasing",
+      "character_asset": "assets/characters/data-science-pirate.png",
+      "character_description": "Purple-coated pirate analyst with ornate violet hat and glowing holographic charts/tablet",
+      "secondary_track": null
+    },
+    "cybersecurity": {
+      "name_ar": "الأمن السيبراني",
+      "name_en": "Cybersecurity",
+      "character_title_ar": null,
+      "colors": {
+        "primary": "#78DAA0",
+        "bright": "#80EFB0",
+        "dark": "#123A27",
+        "glow": "rgba(77,223,148,0.32)"
+      },
+      "icon": "shield-check",
+      "character_asset": "assets/characters/cybersecurity-pirate.png",
+      "character_description": "Green stealth pirate hacker with dark hat and face mask, holding a luminous green code sheet",
+      "secondary_track": null
+    }
+  },
+  "shared_components": [
+    {
+      "name": "BrandMark",
+      "notes": "Code-like white logo + GDGoC / AASTMT ASWAN arranged two lines; use provided real logo SVG if available, never use an unlicensed replica."
+    },
+    {
+      "name": "LocaleIndicator",
+      "notes": "Compact globe and AR at header right of landing only, but do not fake changing locale unless translations actually exist."
+    },
+    {
+      "name": "PixelFrame",
+      "notes": "Crisp cut corner ornamental frame with CSS fallback."
+    },
+    {
+      "name": "Lantern",
+      "notes": "Decorative warm emissive hanging lantern; aria-hidden."
+    },
+    {
+      "name": "ParchmentPanel",
+      "notes": "Cream ragged-edge parchment texture, high-contrast dark Arabic text, dynamic height for wrapping."
+    },
+    {
+      "name": "PirateCharacter",
+      "props": [
+        "trackId",
+        "pose",
+        "priority"
+      ],
+      "notes": "Responsive transparent character art kept separate from content."
+    },
+    {
+      "name": "TrackBadge",
+      "props": [
+        "trackId"
+      ],
+      "notes": "Track theme color and icon."
+    },
+    {
+      "name": "TrackCard",
+      "props": [
+        "trackId",
+        "compact",
+        "selected"
+      ],
+      "notes": "Reused by all-tracks overview and result secondary track recommendations."
+    },
+    {
+      "name": "QuestionProgress",
+      "props": [
+        "index",
+        "total"
+      ],
+      "notes": "Arabic label, all markers represented consistently; aria progressbar semantics."
+    },
+    {
+      "name": "RpgButton",
+      "props": [
+        "variant",
+        "disabled",
+        "loading"
+      ],
+      "notes": "Red for primary and outlined dark for secondary; 44px minimum touch target."
+    },
+    {
+      "name": "ResultSection",
+      "props": [
+        "title",
+        "items",
+        "accent"
+      ],
+      "notes": "Strength, traits and secondary track cards."
+    },
+    {
+      "name": "ShareResult",
+      "notes": "Web Share API where supported, fallback copy of result URL; exported result artwork only if implemented with supported capture/export library."
+    }
+  ],
+  "responsive_rules": {
+    "mobile_first": true,
+    "breakpoints_css_px": {
+      "tiny_max": 359,
+      "mobile": 430,
+      "tablet": 768,
+      "desktop": 1024
+    },
+    "base_layout": "100dvh-capable screens; allow vertical overflow, never crop main actions; root inline-size:100%; max-width for content ~1180px; use viewport-fit=cover and safe-area padding.",
+    "mobile": "Single column, 16px outer gutters (12px on tiny), text never below 14px for primary reading, decorative layers behind main content.",
+    "tablet": "Increase hero imagery and content breathing room; split columns only when readable.",
+    "desktop": "Recreate wider poster-like compositions: layered characters, ship scenery, and result illustration beside text.",
+    "touch": "Minimum 44x44px interactive targets and at least 8px gaps; prevent accidental swipe takeover inside vertical page scroll.",
+    "images": "Responsive <picture>/srcset; character PNG/WebP transparent; background scene WebP/AVIF; pre-size images to avoid layout shifts."
+  },
+  "application_state": {
+    "shape": {
+      "route": "string",
+      "quizSessionId": "string | null",
+      "quizMode": "multiple_choice (fixed; no free-text mode)",
+      "questionIndex": "integer 0..7",
+      "questionCount": 8,
+      "responses": "Array<{questionId:string, optionId:string}>; one selected option per answered question",
+      "status": "idle | answering | submitting | analyzing | complete | error",
+      "resultTrackId": "track id | null",
+      "secondaryTrackId": "track id | null",
+      "resultContent": "server/config content | null",
+      "shareStatus": "idle | shared | copied | failed"
+    },
+    "flow": [
+      {
+        "from": "landing",
+        "action": "start_quiz",
+        "to": "quiz",
+        "guard": "initialize quiz session and load approved questions"
+      },
+      {
+        "from": "quiz",
+        "action": "next_answer",
+        "to": "quiz",
+        "guard": "answer passes input requirements; persist progress"
+      },
+      {
+        "from": "quiz",
+        "action": "submit_final_answer",
+        "to": "loading",
+        "guard": "all 8 answers present and result analysis has been initiated"
+      },
+      {
+        "from": "loading",
+        "action": "analysis_success",
+        "to": "result/:trackId",
+        "guard": "known returned trackId; result source verified"
+      },
+      {
+        "from": "loading",
+        "action": "analysis_failure",
+        "to": "loading",
+        "guard": "show retry/back actions, never hang forever"
+      },
+      {
+        "from": "result/:trackId",
+        "action": "browse_tracks",
+        "to": "tracks"
+      }
+    ],
+    "persistence": "Store the current question index and selected option IDs per question in sessionStorage (or opt-in localStorage) if persistence is desired; do not include responses in a public URL.",
+    "quiz_policy": {
+      "default_mode": "multiple_choice",
+      "allowed_modes": [
+        "multiple_choice"
+      ],
+      "question_count": 8,
+      "selection": "Four choices per question; exactly one option per question (radio behavior).",
+      "question_data_source": "Separate author-approved Arabic question bank or API. The screenshot provides question 3 only; questions 1, 2, 4–8 are not supplied.",
+      "next_disabled_until_selected": true,
+      "back_navigation": "Persist previous selection and allow changing it.",
+      "scoring_and_ai": "Unspecified; provide integration contract/stub only. Do not hardcode a personality outcome or arbitrary weights.",
+      "prohibited_input_types": [
+        "free_text_chat",
+        "textarea",
+        "chat_bubbles",
+        "multi_select"
+      ]
+    },
+    "result_policy": {
+      "supported_primary_track_ids": [
+        "software_engineering",
+        "artificial_intelligence",
+        "web_development",
+        "data_science",
+        "cybersecurity"
+      ],
+      "complete_result_copy_available_for": [
+        "software_engineering",
+        "artificial_intelligence"
+      ],
+      "missing_content_for": [
+        "web_development",
+        "data_science",
+        "cybersecurity"
+      ],
+      "missing_result_behavior": "Show approved generic fallback and flag incomplete copy; do not invent detailed strengths/traits."
+    }
+  },
+  "accessibility": {
+    "semantic_html": "main/nav/header/section/button/form with accessible names; decorative scene aria-hidden",
+    "rtl": "Use dir=rtl on page and direction-aware margins/icons; preserve correct logical back/forward arrows in Arabic UI.",
+    "contrast": "Ensure parchment text >=4.5:1; translucent panel backgrounds opaque enough over illustrations",
+    "keyboard": "Visible focus ring; keyboard-selectable native radio option cards and accessible Back/Next navigation.",
+    "motion": "prefers-reduced-motion support",
+    "performance": "Do not block largest text paint on hero image; preload only current screen and most relevant art."
+  },
+  "delivery_acceptance": [
+    "Each screen can be reconstructed from real HTML/CSS components and optimized independent artwork, not screenshot overlays.",
+    "At 320px wide and 390px wide all Arabic text is uncut and calls to action are clickable.",
+    "Desktop layout resembles its corresponding provided screenshot while mobile remains purpose-built.",
+    "Each track uses the correct character, icon and theme and never mixes colors.",
+    "A screen-reader can announce page title, quiz progress, question and status changes.",
+    "No invented unanswered question bank, result-scoring algorithm, or fake loading progress.",
+    "The personality quiz is MCQ-only: four single-select answer cards per question; Next requires a selection and Back restores it; no free-text composer."
+  ]
+}

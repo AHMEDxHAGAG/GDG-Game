@@ -75,9 +75,9 @@ export function ExpeditionProvider({
   engine,
   persist = true,
 }: ExpeditionProviderProps): React.JSX.Element {
-  const engineRef = useRef<ConversationEngine>(engine ?? createConversationEngine());
+  const [activeEngine] = useState<ConversationEngine>(() => engine ?? createConversationEngine());
   const [state, dispatch] = useReducer(expeditionReducer, undefined, () => createInitialState());
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = state.hydrated;
 
   // Refs mirroring reducer state keep async orchestration race-free and let the
   // engine callbacks stay referentially stable.
@@ -91,10 +91,12 @@ export function ExpeditionProvider({
   });
   const pendingRef = useRef<PendingOperation | null>(null);
   const failedOpRef = useRef<PendingOperation | null>(null);
+  // Mirror of the latest reducer state, refreshed after commit. Only ever read
+  // from event handlers (which run after effects), never during render.
   const stateRef = useRef(state);
-  stateRef.current = state;
 
   useEffect(() => {
+    stateRef.current = state;
     contextRef.current = {
       sessionId: state.sessionId,
       nickname: state.nickname,
@@ -106,21 +108,22 @@ export function ExpeditionProvider({
     failedOpRef.current = state.failedOperation;
   }, [state]);
 
-  // 1. Restore a previous voyage, once, on the client.
+  // 1. Restore a previous voyage, once, on the client. The effect only reads
+  // storage and dispatches — the "restore already happened" fact lives in
+  // reducer state, so there is no setState-in-effect cascade.
   useEffect(() => {
-    if (isHydrated) return;
-    if (persist) {
-      const restored = loadSession();
-      if (restored) dispatch({ type: 'session/hydrate', payload: restored });
-    }
-    setIsHydrated(true);
-  }, [isHydrated, persist]);
+    if (state.hydrated) return;
+    dispatch({
+      type: 'session/hydrate',
+      payload: persist ? loadSession() : null,
+    });
+  }, [state.hydrated, persist]);
 
   // 2. Persist every subsequent change.
   useEffect(() => {
-    if (!isHydrated || !persist) return;
+    if (!state.hydrated || !persist) return;
     saveSession(state);
-  }, [state, isHydrated, persist]);
+  }, [state, state.hydrated, persist]);
 
   function syncContextFromResponse(response: EngineResponse): void {
     const current = contextRef.current;
@@ -142,7 +145,7 @@ export function ExpeditionProvider({
     try {
       if (operation === 'start') {
         const context = contextRef.current;
-        const response = await engineRef.current.start({
+        const response = await activeEngine.start({
           sessionId: context.sessionId,
           nickname: context.nickname,
           engineState: context.engineState,
@@ -153,7 +156,7 @@ export function ExpeditionProvider({
           // Chain the reveal fetch inside the same guard so no message can
           // interleave between the closing turn and the result.
           try {
-            const result = await engineRef.current.getResult(contextRef.current);
+            const result = await activeEngine.getResult(contextRef.current);
             dispatch({ type: 'reveal/result', result, at: Date.now() });
           } catch (nested) {
             dispatch({
@@ -177,12 +180,12 @@ export function ExpeditionProvider({
       }
 
       if (operation === 'reply') {
-        const response = await engineRef.current.reply(contextRef.current, input ?? '');
+        const response = await activeEngine.reply(contextRef.current, input ?? '');
         syncContextFromResponse(response);
         dispatch({ type: 'engine/success', response, at: Date.now() });
         if (response.phase === 'completed') {
           try {
-            const result = await engineRef.current.getResult(contextRef.current);
+            const result = await activeEngine.getResult(contextRef.current);
             dispatch({ type: 'reveal/result', result, at: Date.now() });
           } catch (nested) {
             dispatch({
@@ -205,7 +208,7 @@ export function ExpeditionProvider({
         return;
       }
 
-      const result = await engineRef.current.getResult(contextRef.current);
+      const result = await activeEngine.getResult(contextRef.current);
       dispatch({ type: 'reveal/result', result, at: Date.now() });
     } catch (error) {
       dispatch({
@@ -222,7 +225,7 @@ export function ExpeditionProvider({
     } finally {
       pendingRef.current = null;
     }
-  }, []);
+  }, [activeEngine]);
 
   const setNickname = useCallback((nickname: string | null) => {
     // WelcomeScene already normalizes, but normalizing here keeps direct
@@ -234,7 +237,10 @@ export function ExpeditionProvider({
   }, []);
 
   const start = useCallback(() => {
-    const current = stateRef.current;
+    // Read the orchestration mirror, not `stateRef`: `setNickname` writes the
+    // nickname there synchronously, so a nickname typed and submitted in the
+    // same tick is already visible here.
+    const current = contextRef.current;
     // Optimistic reset so the engine sees a fresh voyage even though the
     // reducer state syncs on the next render. The nickname chosen on the
     // welcome screen is preserved; everything else is cleared by the reducer.
@@ -341,7 +347,7 @@ export function ExpeditionProvider({
       state,
       isHydrated,
       canResume: hasResumableSession(state),
-      engineMode: engineRef.current.mode,
+      engineMode: activeEngine.mode,
       setNickname,
       start,
       resume,
@@ -350,7 +356,7 @@ export function ExpeditionProvider({
       retry,
       previewTrack,
     }),
-    [state, isHydrated, setNickname, start, resume, restart, sendMessage, retry, previewTrack],
+    [state, isHydrated, activeEngine, setNickname, start, resume, restart, sendMessage, retry, previewTrack],
   );
 
   return <ExpeditionContext.Provider value={value}>{children}</ExpeditionContext.Provider>;

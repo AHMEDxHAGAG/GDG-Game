@@ -37,6 +37,46 @@ describe('MockConversationEngine', () => {
     expect(result.explanation).toBeNull();
   });
 
+  it('reports progress that matches the scenarios actually posed', async () => {
+    const engine = new MockConversationEngine({ latencyMs: 0 });
+    const started = await engine.start({ sessionId: 's1', nickname: null, engineState: null });
+
+    // Nothing has been asked yet.
+    expect(started.progress?.asked).toBe(0);
+    const expected = started.progress?.expected;
+    expect(expected).toBeGreaterThan(0);
+
+    let context = {
+      sessionId: 's1',
+      nickname: null,
+      messages: started.messages,
+      phase: started.phase,
+      progress: started.progress ?? null,
+      engineState: started.engineState ?? null,
+    };
+
+    const asked: number[] = [];
+    for (let i = 0; i < 12 && context.phase !== 'completed'; i += 1) {
+      const response = await engine.reply(context, `answer ${i}`);
+      context = {
+        ...context,
+        messages: response.messages,
+        phase: response.phase,
+        progress: response.progress ?? context.progress,
+        engineState: response.engineState ?? context.engineState,
+      };
+      asked.push(response.progress?.asked ?? 0);
+    }
+
+    expect(context.phase).toBe('completed');
+    // One question asked per reply, in order, never skipping or repeating.
+    expect(asked).toEqual([1, 2, 3, 4, 5, 6, 7, 7]);
+    // The meter must never exceed the expected count (no "8 of 7").
+    for (const value of asked) {
+      expect(value).toBeLessThanOrEqual(expected!);
+    }
+  });
+
   it('resumes from an opaque cursor without replaying the intro', async () => {
     const engine = new MockConversationEngine({ latencyMs: 0 });
     const resumed = await engine.start({

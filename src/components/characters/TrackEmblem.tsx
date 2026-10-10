@@ -15,10 +15,17 @@ type EmblemProps = SVGProps<SVGSVGElement> & {
  * they appear on badges, the journey meter and the exported card.
  */
 
-function Frame({ children, color, title }: EmblemProps & { children: React.ReactNode }) {
+function Frame({ children, color, title, ...rest }: EmblemProps & { children: React.ReactNode }) {
   return (
+    // `rest` carries the caller's SVG props — most importantly `className`,
+    // which is how every call site sizes the emblem. It is spread first so the
+    // fixed attributes below always win; without it an unsized SVG falls back
+    // to its viewBox ratio and inflates whatever it sits inside.
     <svg
+      {...rest}
       viewBox="0 0 48 48"
+      width="100%"
+      height="100%"
       role={title ? 'img' : undefined}
       fill="none"
       stroke={color}
@@ -27,6 +34,7 @@ function Frame({ children, color, title }: EmblemProps & { children: React.React
       strokeLinejoin="round"
     >
       {title ? <title>{title}</title> : null}
+
       {children}
     </svg>
   );

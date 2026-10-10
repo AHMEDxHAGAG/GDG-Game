@@ -32,11 +32,13 @@ const config = [
       ],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       eqeqeq: ['error', 'smart'],
-      // The provider intentionally syncs orchestration refs from state and the
-      // shell derives transient gates from phase changes; both are idiomatic
-      // here and pre-existing patterns, so keep them advisory.
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/refs': 'warn',
+    },
+  },
+  {
+    // Build/verification scripts report their result on stdout by design.
+    files: ['tools/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
     },
   },
 ];

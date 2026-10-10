@@ -1,0 +1,133 @@
+{
+  "id": "result_software_engineering",
+  "file_name": "ResultCardExample1.png",
+  "page_name_ar": "نتيجة شخصية المهندس القائد",
+  "page_name_en": "Result Card — The Lead Engineer",
+  "route": "/result/software_engineering",
+  "screenshot": "../references/ResultCardExample1.png",
+  "reference_size_px": {
+    "width": 678,
+    "height": 829
+  },
+  "uses_shared": "../shared-design-state.json",
+  "track_id": "software_engineering",
+  "theme_color": "#F45361",
+  "content": {
+    "eyebrow": "شخصيتك هي",
+    "persona_title": "المهندس القائد",
+    "track_subtitle": "مسار هندسة البرمجيات",
+    "tagline": "أنت تبني، تنظم، وتحول الأفكار إلى واقع.",
+    "strength": {
+      "title": "قوتك الفريدة",
+      "description": "تحويل الأفكار المعقدة إلى أنظمة عملية وموثوقة.",
+      "icon": "gear"
+    },
+    "traits": {
+      "title": "خصائصك المميزة",
+      "items": [
+        "تفكر بشكل منطقي ومنهجي",
+        "تستمتع بحل المشكلات",
+        "تهتم ببناء حلول حقيقية ومستدامة",
+        "تعمل بشكل ممتاز ضمن فريق"
+      ]
+    },
+    "secondary_track": {
+      "track_id": "web_development",
+      "eyebrow": "المسار المقترح الثانوي",
+      "name": "تطوير الويب",
+      "icon": "code-xml",
+      "description": "لديك شغف بالبناء، وقد تستمتع بتحويل الأفكار إلى تجارب تفاعلية يستخدمها الجميع."
+    }
+  },
+  "visuals": {
+    "character": "Red pirate engineering captain with black and scarlet tricorne, white cross-body straps, red scarf, red coat and boots; visible almost full body, holds hat brim.",
+    "backdrop": "Dark maroon-night ship deck with red pirate flag behind torso and crates below; warm lantern glow left edge.",
+    "accent_sections": "Red strong title and features, burgundy translucent tagline, thin coral section borders, orange accent for web secondary recommendation.",
+    "exact_reference_priority": [
+      "character pose and track red",
+      "large persona headline",
+      "outlines/strength box",
+      "traits with red diamonds",
+      "secondary web card"
+    ]
+  },
+  "common_layout": {
+    "layout_reference": "Result screenshot portrays character occupying left 45%, content stacked right with track-colored accents. Mobile version must reorganize to readable vertical sections rather than shrinking screenshot.",
+    "common_header": {
+      "brand": "GDGoC AASTMT ASWAN",
+      "share_button_label": "مشاركة النتيجة",
+      "share_icon": "share-2",
+      "behavior": "Use navigator.share if supported; otherwise copy absolute result link and announce copied state; use actual saved result ID if result is private."
+    },
+    "content_sections": [
+      {
+        "key": "eyebrow",
+        "text": "شخصيتك هي"
+      },
+      {
+        "key": "persona_title",
+        "treatment": "extra-large bold in primary track color"
+      },
+      {
+        "key": "track_subtitle"
+      },
+      {
+        "key": "tagline",
+        "treatment": "theme-colored translucent ribbon"
+      },
+      {
+        "key": "unique_strength",
+        "label": "قوتك الفريدة",
+        "treatment": "outlined card with large track icon"
+      },
+      {
+        "key": "traits",
+        "label": "خصائصك المميزة",
+        "treatment": "4 bullet traits with colored diamond markers"
+      },
+      {
+        "key": "secondary_track",
+        "label": "المسار المقترح الثانوي",
+        "treatment": "bordered lower card with icon, title and description"
+      }
+    ],
+    "mobile_layout": {
+      "container": "Single-column scrollable portrait result (not a flattened screenshot).",
+      "topbar": "Logo top-start, share button top-end with 44px hit area; both retain sufficient contrast.",
+      "hero": "Show pirate character as standalone illustrated figure in upper hero stage (~240-350px), with dark gradient behind text. Persona title can be above or immediately after artwork as long as readability is preserved.",
+      "copy": "Stack tagline, strength, traits and secondary card with 12-20px vertical gaps; max 100% available width, at least 16px side padding.",
+      "text": "Use centered title but section descriptions right-aligned RTL; avoid text on top of bright character silhouette.",
+      "share": "Provide optional fixed lower safe-area share CTA only if it does not obscure content."
+    },
+    "tablet_desktop_layout": {
+      "min_two_column_width_px": 768,
+      "illustration": "left ~43-48% and content right ~52-57%",
+      "header": "Across both columns",
+      "copy": "Constrain to comfortable line length",
+      "scene": "Preserve dock, pirate flag, lantern and ship silhouettes as subtle atmosphere."
+    },
+    "share_card": {
+      "suggested_export_size_px": {
+        "width": 1080,
+        "height": 1350
+      },
+      "rendering": "If adding save/share image, compose purpose-built poster from approved assets and real text; do not screenshot offscreen content prematurely.",
+      "privacy": "Do not share response text or profile identifiers by default."
+    },
+    "actions": {
+      "share": "Web Share API or copy URL",
+      "restart_quiz": "Optional visible CTA after results",
+      "explore_tracks": "Optional /tracks link"
+    },
+    "accessibility": [
+      "Heading order h1 for persona and h2 for sections.",
+      "Character art decorative unless it communicates unique information.",
+      "Track meaning must be communicated via name/icon, not only color."
+    ]
+  },
+  "assets_required": [
+    "assets/characters/software-engineering-pirate.png",
+    "assets/backgrounds/result-software-engineering.webp",
+    "assets/branding/gdgoc-aastmt-logo.svg"
+  ]
+}
