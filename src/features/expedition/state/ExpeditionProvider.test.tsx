@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createElement, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { MockConversationEngine } from '@/features/conversation/engine/MockConversationEngine';
 import {
@@ -10,8 +10,11 @@ import {
 
 function setup() {
   const engine = new MockConversationEngine({ latencyMs: 0 });
-  const wrapper = ({ children }: { children: ReactNode }) =>
-    createElement(ExpeditionProvider, { engine, persist: false, children });
+  const wrapper = ({ children }: { children: ReactNode }): React.JSX.Element => (
+    <ExpeditionProvider engine={engine} persist={false}>
+      {children}
+    </ExpeditionProvider>
+  );
   return renderHook(() => useExpedition(), { wrapper });
 }
 
@@ -94,8 +97,11 @@ describe('ExpeditionProvider orchestration', () => {
 
   it('retries a recoverable start failure', async () => {
     const flaky = new MockConversationEngine({ latencyMs: 0, failNextCalls: 1 });
-    const wrapper = ({ children }: { children: ReactNode }) =>
-      createElement(ExpeditionProvider, { engine: flaky, persist: false, children });
+    const wrapper = ({ children }: { children: ReactNode }): React.JSX.Element => (
+      <ExpeditionProvider engine={flaky} persist={false}>
+        {children}
+      </ExpeditionProvider>
+    );
     const { result } = renderHook(() => useExpedition(), { wrapper });
 
     act(() => {
