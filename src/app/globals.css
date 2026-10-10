@@ -1,0 +1,294 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * Design tokens
+ * Palette and typography are inherited from the GDGoC AASTMT Aswan
+ * pirate-expedition visual language (parchment + ink + muted sea).
+ * ------------------------------------------------------------------ */
+
+@theme {
+  /* Surfaces */
+  --color-parchment-50: #fbf3df;
+  --color-parchment-100: #f6e9c8;
+  --color-parchment-200: #eeddad;
+  --color-parchment-300: #e8d3a3;
+  --color-parchment-400: #dcc191;
+  --color-parchment-500: #c9a86a;
+  --color-parchment-600: #b08e56;
+  --color-parchment-700: #9a7043;
+  --color-parchment-800: #7a5734;
+  --color-parchment-900: #55402a;
+
+  /* Ink */
+  --color-ink: #24201a;
+  --color-ink-soft: #554535;
+  --color-ink-faint: #7d6a55;
+
+  /* Sea + wood */
+  --color-ocean: #72969a;
+  --color-ocean-deep: #456e75;
+  --color-ocean-mist: #a4bcb5;
+  --color-wood: #684832;
+  --color-wood-dark: #4a3323;
+
+  /* Accents */
+  --color-gold: #b78a43;
+  --color-gold-bright: #d9ac5e;
+  --color-treasure: #a44732;
+  --color-flag-blue: #4285f4;
+  --color-flag-red: #ea4335;
+  --color-flag-yellow: #fbbc04;
+  --color-flag-green: #34a853;
+
+  /* Typography */
+  --font-display: var(--font-pirata), 'Georgia', serif;
+  --font-sans: var(--font-cairo), 'Segoe UI', system-ui, sans-serif;
+
+  /* Motion */
+  --ease-nautical: cubic-bezier(0.22, 0.68, 0.24, 1);
+
+  /* Radii — deliberately small; this is paper and wood, not app chrome */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Track accent tokens
+ * Each pirate has a vivid accent (artwork, effects) and a deep accent
+ * (text and borders on parchment, where vivid colours lose contrast).
+ * ------------------------------------------------------------------ */
+
+:root {
+  --track-swe-vivid: #d33a2c;
+  --track-swe-deep: #8e2318;
+  --track-ai-vivid: #2e86de;
+  --track-ai-deep: #12508c;
+  --track-web-vivid: #e88b22;
+  --track-web-deep: #94520a;
+  --track-data-vivid: #8e44c4;
+  --track-data-deep: #56297f;
+  --track-cyber-vivid: #22a850;
+  --track-cyber-deep: #146238;
+
+  --scene-inset: 0px;
+}
+
+@theme inline {
+  --color-track-swe: var(--track-swe-vivid);
+  --color-track-ai: var(--track-ai-vivid);
+  --color-track-web: var(--track-web-vivid);
+  --color-track-data: var(--track-data-vivid);
+  --color-track-cyber: var(--track-cyber-vivid);
+}
+
+/* ------------------------------------------------------------------ *
+ * Base
+ * ------------------------------------------------------------------ */
+
+@layer base {
+  :root {
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  html {
+    /* Mobile browsers resize the layout viewport when the soft keyboard opens.
+       Keeping a stable viewport is what stops the composer from being pushed
+       under the keyboard. */
+    height: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    background-color: var(--color-parchment-300);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-wrap: break-word;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-flag-blue);
+    outline-offset: 3px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::selection {
+    background: var(--color-gold-bright);
+    color: var(--color-ink);
+  }
+
+  /* Latin runs inside Arabic sentences must not be reordered. */
+  [dir='auto'] {
+    unicode-bidi: plaintext;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Utilities
+ * ------------------------------------------------------------------ */
+
+@utility paper-grain {
+  position: relative;
+}
+
+@utility surface-parchment {
+  background-color: var(--color-parchment-200);
+  background-image:
+    radial-gradient(ellipse at 22% 18%, rgb(114 150 154 / 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse at 78% 72%, rgb(114 150 154 / 0.12) 0%, transparent 52%),
+    linear-gradient(180deg, rgb(251 243 223 / 0.55) 0%, rgb(201 168 106 / 0.18) 100%);
+}
+
+@utility text-shadow-ink {
+  text-shadow: 0 1px 0 rgb(36 32 26 / 0.18);
+}
+
+@utility ruled-line {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    rgb(85 69 53 / 0.09) 27px,
+    rgb(85 69 53 / 0.09) 28px
+  );
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion
+ * ------------------------------------------------------------------ */
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.4deg);
+  }
+  50% {
+    transform: rotate(1.4deg);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, -6px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+    transform: translate3d(0, 0, 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(0, -3px, 0);
+  }
+}
+
+@keyframes reveal-sweep {
+  from {
+    transform: translate3d(-120%, 0, 0) rotate(6deg);
+  }
+  to {
+    transform: translate3d(120%, 0, 0) rotate(6deg);
+  }
+}
+
+.animate-bob {
+  animation: bob 5.5s var(--ease-nautical) infinite;
+}
+.animate-sway {
+  animation: sway 7s var(--ease-nautical) infinite;
+}
+.animate-drift {
+  animation: drift 19s ease-in-out infinite;
+}
+.animate-bubble-in {
+  animation: bubble-in 0.42s var(--ease-nautical) both;
+}
+.animate-typing-dot {
+  animation: typing-dot 1.25s ease-in-out infinite;
+}
+.animate-reveal-sweep {
+  animation: reveal-sweep 1.6s var(--ease-nautical) infinite;
+}
+
+/* ------------------------------------------------------------------ *
+ * Reduced motion
+ * Every entrance is still reachable; only the movement is removed.
+ * ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
