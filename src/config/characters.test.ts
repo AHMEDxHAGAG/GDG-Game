@@ -21,12 +21,12 @@ describe('character catalogue', () => {
       expect(character.trackName).toBeTruthy();
       expect(character.titleAr).toBeTruthy();
       expect(character.personalityAr).toBeTruthy();
-      expect(character.discoveryNoteAr).toContain('Track');
+      expect(character.discoveryNoteAr).toContain('مسار');
       expect(character.artwork.alt).toBeTruthy();
       expect(character.artwork.width).toBeGreaterThan(0);
       // Artwork src points at the production slot; placeholders render
       // until the transparent PNGs land in public/assets/characters/.
-      expect(character.artwork.src).toMatch(/^\/assets\/characters\/.+\.png$/);
+      expect(character.artwork.src).toMatch(/^\/assets\/characters\/.+\.webp$/);
       expect(getCharacter(character.id)).toEqual(CHARACTERS[character.id]);
     }
   });
@@ -50,7 +50,7 @@ describe('artwork availability', () => {
 
   it('config points every track at its documented artwork path', () => {
     for (const character of CHARACTER_LIST) {
-      expect(character.artwork.src).toBe(`/assets/characters/${character.id}.png`);
+      expect(character.artwork.src).toBe(`/assets/characters/${character.id}.webp`);
       expect(character.artwork.width).toBeGreaterThan(0);
       expect(character.artwork.height).toBeGreaterThan(0);
       expect(character.artwork.alt.length).toBeGreaterThan(0);

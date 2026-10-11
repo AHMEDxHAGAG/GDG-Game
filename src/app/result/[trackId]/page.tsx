@@ -5,7 +5,7 @@ import { ResultScene } from '@/features/reveal/components/ResultScene';
 
 export const metadata: Metadata = {
   title: 'نتيجتك',
-  description: 'كارت شخصيتك، جاهز للتحميل والمشاركة.',
+  description: 'شوف نتيجتك واحفظ كارت شخصيتك أو شاركه.',
 };
 
 export default async function ResultPage({

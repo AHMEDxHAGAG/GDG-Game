@@ -4,6 +4,7 @@
   "private": true,
   "description": "GDGoC AASTMT Aswan \u2014 Discover Your Personality. A mobile-first, Arabic RTL quiz: ten multiple-choice questions scored locally into a weighted ranking of five tracks, with a downloadable username card.",
   "scripts": {
+    "assets:prepare": "node tools/prepare-ui-assets.mjs && node tools/generate-artwork-manifest.mjs",
     "predev": "node tools/generate-artwork-manifest.mjs",
     "dev": "next dev",
     "prebuild": "node tools/generate-artwork-manifest.mjs",

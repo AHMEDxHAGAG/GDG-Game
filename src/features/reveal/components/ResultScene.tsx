@@ -7,8 +7,7 @@ import { ui } from '@/content/ui';
 import { getCharacter } from '@/config/characters';
 import { useQuiz } from '@/features/quiz/state/QuizProvider';
 import { resultRoute, trackIdFromRoute } from '@/lib/routes';
-import { NauticalBackground } from '@/components/shared/NauticalBackground';
-import { CharacterArtwork } from '@/components/characters/CharacterArtwork';
+import { ExpeditionBrand, NauticalBackground } from '@/components/shared/NauticalBackground';
 import { TrackEmblem } from '@/components/characters/TrackEmblem';
 import { ResultCard, type ResultCardHandle } from '@/features/reveal/components/ResultCard';
 import { ResultActions, useResultExport } from '@/features/reveal/components/ResultActions';
@@ -97,91 +96,116 @@ export function ResultScene({ trackId }: ResultSceneProps): React.JSX.Element {
     );
   }
 
+  const secondary = getCharacter(copy.secondaryTrackId);
+
   return (
-    <NauticalBackground withLantern>
+    <NauticalBackground scene="deck">
       <main
-        className="mx-auto flex min-h-[100dvh] w-full max-w-[46rem] flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6"
+        className="mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6"
         data-scene="result"
       >
         <header className="flex items-center justify-between gap-3">
-          <h1
-            ref={headingRef}
-            tabIndex={-1}
-            className="sr-only"
-          >
-            {copy.eyebrow} {copy.personaTitleAr}
-          </h1>
-          <p className="text-[0.8rem] font-bold text-text-secondary">{ui.card.eyebrow}</p>
+          <ExpeditionBrand />
           {match ? (
             <p
               dir="ltr"
               data-testid="result-rank"
-              className="rounded-full border border-surface-border px-2.5 py-0.5 text-[0.72rem] font-bold text-text-primary"
+              className="rounded-sm border border-accent-gold/40 bg-background/75 px-3 py-1 text-sm font-bold text-text-primary"
             >
               #{match.rank} · {ui.matches.scoreLabel(match.score)}
             </p>
           ) : null}
         </header>
-
-        {/* Quick summary above the card — the card itself stays clean so the
-            exported PNG reads well. */}
-        <div className="mt-3 flex items-center gap-3">
-          <span className="h-20 w-14 shrink-0">
-            <CharacterArtwork character={character} className="h-full w-full" priority />
-          </span>
-          <div className="min-w-0">
-            <p
-              className="text-[0.75rem] font-bold text-text-secondary"
-              style={{ color: character.palette.vivid }}
-            >
-              {copy.personaTitleAr}
-            </p>
-            <p className="text-lg leading-tight font-extrabold text-text-primary">
-              {copy.trackSubtitleAr}
-            </p>
-            <p className="mt-0.5 flex items-center gap-1.5">
-              <TrackEmblem
-                emblem={character.emblem}
-                color={character.palette.vivid}
-                className="size-3.5 shrink-0"
-              />
-              <span dir="ltr" className="text-[0.75rem] text-text-secondary">
+        <div className="mt-6 grid items-start gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
+          <div className="order-2 space-y-5 lg:order-1" data-testid="result-details">
+            <div>
+              <p className="text-sm font-bold text-text-secondary">{copy.eyebrow}</p>
+              <h1
+                ref={headingRef}
+                tabIndex={-1}
+                className="mt-1 font-display text-3xl font-black leading-snug outline-none sm:text-4xl"
+                style={{ color: character.palette.vivid }}
+              >
+                {copy.personaTitleAr}
+              </h1>
+              <p className="mt-2 text-xl font-bold text-text-primary">{copy.trackSubtitleAr}</p>
+              <p dir="ltr" className="mt-1 font-brand text-sm text-text-secondary">
                 {character.trackName}
-              </span>
+              </p>
+              <p className="mt-4 text-lg leading-relaxed text-text-primary">{copy.taglineAr}</p>
+            </div>
+            <section className="navy-panel p-4 sm:p-5">
+              <h2 className="flex items-center gap-3 text-lg font-extrabold text-accent-gold">
+                <TrackEmblem
+                  emblem={character.emblem}
+                  color={character.palette.vivid}
+                  appearance="ornate"
+                  className="size-10"
+                />
+                {copy.strengthTitleAr}
+              </h2>
+              <p className="mt-3 text-base leading-relaxed text-text-primary">{copy.strengthAr}</p>
+            </section>
+            <section className="navy-panel p-4 sm:p-5">
+              <h2 className="text-lg font-extrabold text-accent-gold">{copy.traitsTitleAr}</h2>
+              <ul className="mt-3 space-y-3">
+                {copy.traits.map((trait) => (
+                  <li
+                    key={trait}
+                    className="flex items-start gap-3 text-base leading-relaxed text-text-primary"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="mt-2.5 size-1.5 shrink-0 rotate-45"
+                      style={{ backgroundColor: character.palette.vivid }}
+                    />
+                    {trait}
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="navy-panel p-4 sm:p-5">
+              <h2 className="text-base font-bold text-text-secondary">{copy.secondaryEyebrowAr}</h2>
+              <p
+                className="mt-3 flex items-center gap-3 text-xl font-extrabold"
+                style={{ color: secondary.palette.vivid }}
+              >
+                <TrackEmblem
+                  emblem={secondary.emblem}
+                  color={secondary.palette.vivid}
+                  appearance="ornate"
+                  className="size-10"
+                />
+                {secondary.trackNameAr}
+              </p>
+              <p className="mt-3 text-base leading-relaxed text-text-primary">
+                {copy.secondaryDescriptionAr}
+              </p>
+            </section>
+            <p className="text-base leading-relaxed text-text-secondary">
+              {character.discoveryNoteAr}
             </p>
           </div>
+          <div className="order-1 mx-auto w-full max-w-[27rem] lg:order-2">
+            <ResultCard
+              ref={cardRef}
+              character={character}
+              username={state.username}
+              match={match}
+            />
+            <ResultActions
+              shareState={shareState}
+              onShare={() => void share()}
+              onExport={() => void exportPng()}
+              onBackToMatches={() => router.push('/matches')}
+              onTracks={() => router.push('/tracks')}
+              onRestart={() => {
+                clearSession();
+                router.push('/');
+              }}
+            />
+          </div>
         </div>
-
-        <p className="mt-3 text-[0.85rem] leading-relaxed text-text-secondary">
-          {copy.taglineAr}
-        </p>
-
-        <div className="mt-4 w-full">
-          <ResultCard
-            ref={cardRef}
-            character={character}
-            username={state.username}
-            match={match}
-          />
-        </div>
-
-        <p className="mt-3 text-center text-[0.8rem] leading-relaxed text-text-secondary">
-          {character.discoveryNoteAr}
-        </p>
-
-        <ResultActions
-          shareState={shareState}
-          onShare={() => void share()}
-          onExport={() => void exportPng()}
-          onBackToMatches={() => router.push('/matches')}
-          onTracks={() => router.push('/tracks')}
-          onRestart={() => {
-            // clearSession wipes storage too; a plain `restart()` would leave a
-            // stale run behind and the next visitor would inherit it.
-            clearSession();
-            router.push('/');
-          }}
-        />
       </main>
     </NauticalBackground>
   );

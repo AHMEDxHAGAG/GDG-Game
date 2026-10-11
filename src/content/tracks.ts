@@ -1,20 +1,9 @@
 import { TRACK_IDS, type TrackId } from '@/features/characters/types';
 
 /**
- * Result-card content for each persona.
- *
- * Provenance matters here, so every entry declares where its copy came from:
- *
- *  - `spec` — verbatim from
- *    `assests/UI/gdgoc-pirate-personality-spec/pages/result-card-*.json`.
- *    Only Software Engineering and Artificial Intelligence have approved
- *    references.
- *  - `authored` — written for this build to the same structure, because the
- *    spec supplies no reference for these tracks. These read as real content
- *    in the UI, but they are ours, not the client's.
- *
- * The flag is data, not a comment, so it can be asserted on and surfaced later
- * without anyone having to remember.
+ * Result copy rewritten in Egyptian Arabic. Persona identities and secondary
+ * pairings come from the original references; rewritten prose is `authored`.
+ * `spec` is reserved for content reproduced verbatim from an approved reference.
  */
 export type ContentSource = 'spec' | 'authored';
 
@@ -38,61 +27,62 @@ export const TRACK_CONTENT: Record<TrackId, TrackTraits> = {
     eyebrow: 'شخصيتك هي',
     personaTitleAr: 'المهندس القائد',
     trackSubtitleAr: 'مسار هندسة البرمجيات',
-    taglineAr: 'أنت تبني، تنظم، وتحول الأفكار إلى واقع.',
-    strengthTitleAr: 'قوتك الفريدة',
-    strengthAr: 'تحويل الأفكار المعقدة إلى أنظمة عملية وموثوقة.',
-    traitsTitleAr: 'خصائصك المميزة',
+    taglineAr: 'بتحب تبني حاجة شغّالة وتظبط تفاصيلها.',
+    strengthTitleAr: 'إيه اللي بيميزك؟',
+    strengthAr: 'بتعرف تقسّم الفكرة المعقدة لخطوات وتحوّلها لنظام شغّال نقدر نعتمد عليه.',
+    traitsTitleAr: 'طريقتك في الشغل',
     traits: [
-      'تفكر بشكل منطقي ومنهجي',
-      'تستمتع بحل المشكلات',
-      'تهتم ببناء حلول حقيقية ومستدامة',
-      'تعمل بشكل ممتاز ضمن فريق',
+      'بتفكّر خطوة بخطوة',
+      'بتحب تفهم سبب المشكلة قبل ما تصلّحها',
+      'بتهتم إن الحل يفضل شغّال مع الوقت',
+      'بتعرف تقسّم الشغل وتشتغل مع فريق',
     ],
     secondaryTrackId: 'web-development',
-    secondaryEyebrowAr: 'المسار المقترح الثانوي',
+    secondaryEyebrowAr: 'مسار تاني ممكن يعجبك',
     secondaryDescriptionAr:
-      'لديك شغف بالبناء، وقد تستمتع بتحويل الأفكار إلى تجارب تفاعلية يستخدمها الجميع.',
-    contentSource: 'spec',
+      'لو بتحب تحوّل الأفكار لحاجات الناس تستخدمها، ممكن تطوير الويب يعجبك كمان.',
+    contentSource: 'authored',
   },
 
   ai: {
     eyebrow: 'شخصيتك هي',
     personaTitleAr: 'ساحر الذكاء',
     trackSubtitleAr: 'مسار الذكاء الاصطناعي',
-    taglineAr: 'أنت تستكشف، تتخيل، وتصنع حلولاً أذكى.',
-    strengthTitleAr: 'قوتك الفريدة',
-    strengthAr: 'دمج الإبداع والتقنية لصناعة حلول ذكية ومبتكرة.',
-    traitsTitleAr: 'خصائصك المميزة',
+    taglineAr: 'بتحب تجرّب أفكار جديدة وتشوف ممكن تعمل إيه.',
+    strengthTitleAr: 'إيه اللي بيميزك؟',
+    strengthAr: 'بتحب تجمع بين الأفكار الجديدة والتكنولوجيا عشان تلاقي حلول تفيد الناس.',
+    traitsTitleAr: 'طريقتك في الشغل',
     traits: [
-      'تبحث دائماً عن طرق جديدة',
-      'تتحمس للتجربة والتعلم',
-      'تفكر خارج الصندوق',
-      'تهتم بتأثير التكنولوجيا على المستقبل',
+      'بتدور على طرق جديدة لحل نفس المشكلة',
+      'بتحب تجرّب وتتعلم من النتيجة',
+      'بتسأل لو فيه حل غير اللي متعودين عليه',
+      'بتتابع التكنولوجيا وبتفكّر ممكن تستخدمها في إيه',
     ],
     secondaryTrackId: 'data-science',
-    secondaryEyebrowAr: 'المسار المقترح الثانوي',
-    secondaryDescriptionAr: 'لديك فضول لفهم الأنماط واكتشاف المعرفة من البيانات.',
-    contentSource: 'spec',
+    secondaryEyebrowAr: 'مسار تاني ممكن يعجبك',
+    secondaryDescriptionAr:
+      'لو بتحب تفهم النماذج بتتعلم إزاي، علم البيانات ممكن يساعدك تفهم البيانات اللي بتتبني عليها.',
+    contentSource: 'authored',
   },
 
   'web-development': {
     eyebrow: 'شخصيتك هي',
     personaTitleAr: 'الملّاح',
     trackSubtitleAr: 'مسار تطوير الويب',
-    taglineAr: 'أنت تصنع، وتجعل كل فكرة في متناول الجميع.',
-    strengthTitleAr: 'قوتك الفريدة',
-    strengthAr: 'تحويل الأفكار إلى تجارب يستخدمها الناس بسهولة.',
-    traitsTitleAr: 'خصائصك المميزة',
+    taglineAr: 'بتحوّل الأفكار لمواقع الناس تعرف تستخدمها.',
+    strengthTitleAr: 'إيه اللي بيميزك؟',
+    strengthAr: 'بتعرف تحوّل الفكرة لواجهة واضحة وسهلة في الاستخدام.',
+    traitsTitleAr: 'طريقتك في الشغل',
     traits: [
-      'تصمم من منظور أول مستخدم',
-      'تهتم بالتفاصيل البصرية',
-      'تحب التخليط بين الجمال والوظيفة',
-      'تقدر تشرح شغلك لأي حد',
+      'بتفكّر في اللي هيستخدم الموقع من البداية',
+      'بتهتم بالشكل والتفاصيل',
+      'بتحب الشكل يبقى حلو والاستخدام يبقى سهل',
+      'بتعرف تشرح شغلك ببساطة',
     ],
     secondaryTrackId: 'software-engineering',
-    secondaryEyebrowAr: 'المسار المقترح الثانوي',
+    secondaryEyebrowAr: 'مسار تاني ممكن يعجبك',
     secondaryDescriptionAr:
-      'بهمك بالواجهات يخليك قريب من الكود نفسه، فممكن تستمتع تبني الأنظمة اللي ورا اللي الناس بتشوفه.',
+      'لو حابب تفهم الكود اللي بيشغّل الموقع من ورا الواجهة، جرّب هندسة البرمجيات كمان.',
     contentSource: 'authored',
   },
 
@@ -100,20 +90,20 @@ export const TRACK_CONTENT: Record<TrackId, TrackTraits> = {
     eyebrow: 'شخصيتك هي',
     personaTitleAr: 'رسّام الخرائط',
     trackSubtitleAr: 'مسار علم البيانات',
-    taglineAr: 'أنت تلاحظ، وتقرأ، وتستخرج المعنى من الفوضى.',
-    strengthTitleAr: 'قوتك الفريدة',
-    strengthAr: 'تحويل الأرقام الغامضة إلى قرارات واضحة.',
-    traitsTitleAr: 'خصائصك المميزة',
+    taglineAr: 'بتدور وسط الأرقام على حاجة توضّح الصورة.',
+    strengthTitleAr: 'إيه اللي بيميزك؟',
+    strengthAr: 'بتعرف تطلع من البيانات معلومات تساعد الناس تاخد قرار أوضح.',
+    traitsTitleAr: 'طريقتك في الشغل',
     traits: [
-      'تلاحظ التفاصيل الصغيرة',
-      'صبور في التفاصيل',
-      'تحب رسم الأنماط',
-      'تثق بالبيانات قبل الخرائط',
+      'بتاخد بالك من تفاصيل ممكن غيرك يفوّتها',
+      'بتدي نفسك وقت تفهم الأرقام كويس',
+      'بتدور على الحاجات اللي بتتكرر في البيانات',
+      'بتراجع الأرقام قبل ما تحكم',
     ],
     secondaryTrackId: 'ai',
-    secondaryEyebrowAr: 'المسار المقترح الثانوي',
+    secondaryEyebrowAr: 'مسار تاني ممكن يعجبك',
     secondaryDescriptionAr:
-      'فهمك للأنماط هيديك أساس ممتاز لو هتبني نماذج ذكاء اصطناعي تتعلم من البيانات نفسها.',
+      'فهمك للبيانات ممكن يفيدك لو حابب تجرّب نماذج ذكاء اصطناعي وتفهم بتتعلم إزاي.',
     contentSource: 'authored',
   },
 
@@ -121,20 +111,20 @@ export const TRACK_CONTENT: Record<TrackId, TrackTraits> = {
     eyebrow: 'شخصيتك هي',
     personaTitleAr: 'الحارس',
     trackSubtitleAr: 'مسار الأمن السيبراني',
-    taglineAr: 'أنت تنتبه، وتحمي، وتفكّر قبل ما تفتح الباب.',
-    strengthTitleAr: 'قوتك الفريدة',
-    strengthAr: 'كشف الخطر مبكراً وحماية كل ما يبنيه الفريق.',
-    traitsTitleAr: 'خصائصك المميزة',
+    taglineAr: 'بتلاحظ المخاطر بدري وتفكّر إزاي تتفاداها.',
+    strengthTitleAr: 'إيه اللي بيميزك؟',
+    strengthAr: 'بتعرف تلاحظ الثغرات وتفكّر إزاي تحمي شغل الفريق قبل ما تحصل مشكلة.',
+    traitsTitleAr: 'طريقتك في الشغل',
     traits: [
-      'شكوك صحي في كل شيء',
-      'تفكّر في أسوأ سيناريو',
-      'تحب التحكم في التفاصيل',
-      'حريص على سرية المعلومات',
+      'بتسأل وبتتأكد قبل ما تثق',
+      'بتفكّر إيه اللي ممكن يحصل غلط',
+      'بتهتم بالصلاحيات والتفاصيل الصغيرة',
+      'بتاخد خصوصية المعلومات بجدية',
     ],
     secondaryTrackId: 'software-engineering',
-    secondaryEyebrowAr: 'المسار المقترح الثانوي',
+    secondaryEyebrowAr: 'مسار تاني ممكن يعجبك',
     secondaryDescriptionAr:
-      'عينك على المخاطر هتخليك متبني أنظمة متينة من الأول، وده أساس قوي في هندسة البرمجيات.',
+      'لو بتحب تفهم الأنظمة عشان تحميها، هندسة البرمجيات ممكن تساعدك تبنيها بشكل أأمن من البداية.',
     contentSource: 'authored',
   },
 };

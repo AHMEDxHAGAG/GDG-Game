@@ -57,9 +57,9 @@ export function MatchesScene(): React.JSX.Element {
   }
 
   return (
-    <NauticalBackground withLantern>
+    <NauticalBackground scene="gallery" withLantern>
       <main
-        className="mx-auto flex min-h-[100dvh] w-full max-w-[42.5rem] flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6"
+        className="matches-layout mx-auto flex min-h-[100dvh] w-full max-w-[42.5rem] flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6"
         data-scene="matches"
       >
         <h1
@@ -83,10 +83,7 @@ export function MatchesScene(): React.JSX.Element {
             .join('، ')}
         </p>
 
-        <ol
-          aria-label={ui.matches.legend}
-          className="mt-4 flex flex-col gap-2.5"
-        >
+        <ol aria-label={ui.matches.legend} className="mt-4 flex flex-col gap-2.5">
           {ranking.map((match, position) => (
             <li key={match.trackId}>
               <MatchRow
@@ -106,11 +103,7 @@ export function MatchesScene(): React.JSX.Element {
         </p>
 
         <div className="mt-auto pt-5">
-          <PirateButton
-            fullWidth
-            variant="secondary"
-            onClick={() => router.push('/quiz')}
-          >
+          <PirateButton fullWidth variant="secondary" onClick={() => router.push('/quiz')}>
             {ui.matches.backToQuiz}
           </PirateButton>
         </div>
@@ -144,7 +137,7 @@ function MatchRow({
       onClick={onSelect}
       data-track-id={match.trackId}
       data-rank={match.rank}
-      className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-md border-2 px-3 py-2.5 text-start transition-transform duration-150 hover:-translate-y-1 ${
+      className={`match-row navy-panel group relative flex w-full items-center gap-2 rounded-md px-1 py-3 sm:gap-4 sm:px-3 text-start transition-transform duration-150 hover:-translate-y-1 ${
         isBest ? 'border-accent-gold/60' : 'border-surface-border'
       } bg-surface/85`}
       style={{ ['--row-accent' as string]: character.palette.vivid }}
@@ -156,7 +149,7 @@ function MatchRow({
       />
 
       <span
-        className="relative grid size-9 shrink-0 place-items-center rounded-full border-2 font-brand text-[0.7rem] font-bold"
+        className="match-rank relative grid size-9 shrink-0 place-items-center rounded-full border-2 font-brand text-[0.7rem] font-bold"
         style={{
           borderColor: character.palette.vivid,
           backgroundColor: `${character.palette.vivid}1f`,
@@ -167,22 +160,22 @@ function MatchRow({
         <span aria-hidden="true">{match.rank}</span>
       </span>
 
-      <span className="relative h-16 w-12 shrink-0">
+      <span className="match-art relative h-24 w-14 shrink-0">
         <CharacterArtwork character={character} className="h-full w-full" />
       </span>
 
-      <span className="relative min-w-0 flex-1">
-        <span className="flex items-baseline gap-1.5">
-          <span className="text-[0.68rem] font-bold text-text-secondary">{rankLabel}</span>
+      <span className="match-copy relative min-w-0 flex-1">
+        <span className="flex flex-wrap items-baseline gap-1.5">
+          <span className="text-sm font-bold text-text-secondary">{rankLabel}</span>
           {isBest ? (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-accent-gold/15 px-1.5 py-px text-[0.6rem] font-bold text-accent-gold">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-accent-gold/15 px-1.5 py-px text-xs font-bold text-accent-gold">
               <Check className="size-2.5" aria-hidden="true" />
               {ui.matches.best}
             </span>
           ) : null}
         </span>
         <span
-          className="block truncate text-[1.05rem] leading-tight font-extrabold"
+          className="block text-[1.05rem] leading-tight font-extrabold"
           style={{ color: character.palette.vivid }}
         >
           {character.titleAr}
@@ -193,14 +186,14 @@ function MatchRow({
             color={character.palette.vivid}
             className="size-3 shrink-0"
           />
-          <span dir="ltr" className="truncate text-[0.7rem] text-text-secondary">
+          <span dir="ltr" className="min-w-0 text-xs text-text-secondary">
             {character.trackName}
           </span>
         </span>
       </span>
 
-      <span className="relative flex shrink-0 flex-col items-end gap-1">
-        <span className="text-[0.72rem] font-bold text-text-secondary">
+      <span className="match-score relative flex shrink-0 flex-col items-end gap-1">
+        <span className="text-sm font-bold text-text-secondary">
           {ui.matches.scoreLabel(match.score)}
         </span>
         <span
@@ -215,9 +208,7 @@ function MatchRow({
             }}
           />
         </span>
-        <span className="text-[0.6rem] text-text-secondary/70">
-          {TOTAL_POINTS}
-        </span>
+        <span className="text-xs text-text-secondary/70">{TOTAL_POINTS}</span>
       </span>
     </button>
   );

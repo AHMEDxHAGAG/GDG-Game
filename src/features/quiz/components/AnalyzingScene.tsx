@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { UI_ASSETS } from '@/config/ui-assets';
 import { ui } from '@/content/ui';
 import { useQuiz } from '@/features/quiz/state/QuizProvider';
 import { NauticalBackground } from '@/components/shared/NauticalBackground';
@@ -61,7 +62,7 @@ export function AnalyzingScene(): React.JSX.Element {
   }, [isHydrated, state.answers, submit, router]);
 
   return (
-    <NauticalBackground withLantern>
+    <NauticalBackground scene="voyage">
       <main
         className="relative mx-auto flex min-h-[100dvh] w-full max-w-[36.75rem] flex-col justify-center px-5"
         data-scene="analyzing"
@@ -70,13 +71,12 @@ export function AnalyzingScene(): React.JSX.Element {
       >
         <span className="sr-only">{ui.analyzing.statusLabel}</span>
 
-        <div
-          aria-hidden="true"
-          className="animate-ship-drift pointer-events-none absolute inset-x-0 top-[18%] h-40 rounded-[50%] blur-3xl"
-          style={{ backgroundColor: 'rgba(255,185,97,0.12)' }}
-        />
+        <div aria-hidden="true" className="flex justify-center pb-6">
+          {/* eslint-disable-next-line @next/next/no-img-element -- decorative local ship */}
+          <img src={UI_ASSETS.brigantine.src} alt="" width={UI_ASSETS.brigantine.width} height={UI_ASSETS.brigantine.height} className="animate-ship-drift h-40 w-auto sm:h-52" />
+        </div>
 
-        <ParchmentPanel className="relative animate-rise-in p-6 text-center" torn>
+        <ParchmentPanel artwork="scroll" className="relative animate-rise-in p-4 text-center sm:p-6">
           <p className="text-ink-soft text-[0.8rem] font-bold tracking-wide uppercase">
             {ui.brand.organization}
           </p>

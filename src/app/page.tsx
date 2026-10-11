@@ -6,7 +6,7 @@ import { LandingScene } from '@/features/quiz/components/LandingScene';
 
 export const metadata: Metadata = {
   title: site.titleAr,
-  description: 'اكتشف أي مسار في GDGoC AASTMT Aswan يناسبك من خلال عشرة أسئلة.',
+  description: 'جاوب على ١٠ أسئلة وشوف أنهي مسار في GDGoC AASTMT Aswan يناسبك.',
 };
 
 export default function HomePage(): React.JSX.Element {

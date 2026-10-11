@@ -9,21 +9,21 @@ import { TRACK_IDS } from '@/features/characters/types';
  *
  * Palettes are the exact track themes from
  * `assests/UI/gdgoc-pirate-personality-spec/shared-design-state.json`, and the
- * artwork dimensions are the real intrinsic size of the supplied PNGs in
+ * artwork dimensions are the real intrinsic size of the optimized WebPs in
  * `public/assets/characters/` (copied from `assests/Characters/`). Declaring
  * them here is what keeps the result-card export free of layout shift.
  */
 
 /**
- * Intrinsic pixel size of every supplied character PNG.
+ * Intrinsic pixel size of every supplied character WebP.
  *
- * Measured, not assumed: all five shipped exports are 1024×1536 (2:3 portrait).
+ * Measured, not assumed: all five optimized exports are 768×1152 (2:3 portrait).
  * The shipped artwork is not square, so any square assumption in a card frame
  * will letterbox or overflow.
  */
 export const CHARACTER_ARTWORK_SIZE = {
-  width: 1024,
-  height: 1536,
+  width: 768,
+  height: 1152,
 } as const;
 
 export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
@@ -34,7 +34,7 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     trackName: 'Software Engineering',
     trackNameAr: 'هندسة البرمجيات',
     tagline: 'The pirate who builds what keeps the expedition alive.',
-    personalityAr: 'بتحب تفهم الحاجة شغالة إزاي من جوا، وتبني حلول تعيش وتستحمل.',
+    personalityAr: 'بتحب تفهم الحاجة شغّالة إزاي وتعمل حلول الناس تقدر تعتمد عليها.',
     palette: {
       vivid: '#F45361',
       deep: '#3D101E',
@@ -44,11 +44,11 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     emblem: 'gear',
     motifs: ['Gear', 'Code scroll', 'Ship mechanisms', 'Strong structures'],
     artwork: {
-      src: '/assets/characters/software-engineering.png',
+      src: '/assets/characters/software-engineering.webp',
       ...CHARACTER_ARTWORK_SIZE,
-      alt: 'قرصان القائد بزي أحمر ومظلة سوداء عليها ترس، وحزام أدوات، ولفافة كود',
+      alt: 'قرصان لابس أحمر، معاه مظلة سودة عليها ترس وحزام أدوات ولفافة كود',
     },
-    discoveryNoteAr: 'دي مجرد بداية المغامرة. تقدر تستكشف أي Track يعجبك!',
+    discoveryNoteAr: 'النتيجة اقتراح، مش قرار. جرّب أي مسار يعجبك.',
   },
 
   ai: {
@@ -58,7 +58,7 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     trackName: 'Artificial Intelligence',
     trackNameAr: 'الذكاء الاصطناعي',
     tagline: 'The pirate who imagines possibilities beyond the horizon.',
-    personalityAr: 'فضولي، بتحب تجرب أفكار جديدة، وتشوف إزاي تخلي الحاجات أذكى.',
+    personalityAr: 'بتحب تجرّب أفكار جديدة وتشوف الذكاء الاصطناعي ممكن يساعدك في إيه.',
     palette: {
       vivid: '#66BAFF',
       deep: '#0C2C64',
@@ -68,11 +68,11 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     emblem: 'robot',
     motifs: ['Robot companion', 'Blue energy', 'Futuristic interfaces', 'Distant stars'],
     artwork: {
-      src: '/assets/characters/ai.png',
+      src: '/assets/characters/ai.webp',
       ...CHARACTER_ARTWORK_SIZE,
-      alt: 'قرصان ساحر بزي أزرق ونظارة، ماسك كرة ذكاء اصطناعي مضيئة',
+      alt: 'قرصان لابس أزرق ونضارة، ماسك كرة مضيئة',
     },
-    discoveryNoteAr: 'دي مجرد بداية المغامرة. تقدر تستكشف أي Track يعجبك!',
+    discoveryNoteAr: 'النتيجة اقتراح، مش قرار. جرّب أي مسار يعجبك.',
   },
 
   'web-development': {
@@ -92,11 +92,11 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     emblem: 'globe',
     motifs: ['Globe', 'Web interface', 'Compass', 'Connected routes'],
     artwork: {
-      src: '/assets/characters/web-development.png',
+      src: '/assets/characters/web-development.webp',
       ...CHARACTER_ARTWORK_SIZE,
-      alt: 'كابتن قرصان بزي برتقالي وشريطي برتقالي متطايرين',
+      alt: 'كابتن قرصان لابس برتقالي، ووراه شريطين برتقالي',
     },
-    discoveryNoteAr: 'دي مجرد بداية المغامرة. تقدر تستكشف أي Track يعجبك!',
+    discoveryNoteAr: 'النتيجة اقتراح، مش قرار. جرّب أي مسار يعجبك.',
   },
 
   'data-science': {
@@ -106,8 +106,7 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     trackName: 'Data Science',
     trackNameAr: 'علم البيانات',
     tagline: 'The pirate who finds meaning hidden inside the maps.',
-    personalityAr:
-      'بتحب تلاحظ التفاصيل، وتدور على patterns، وتطلع معنى من حاجات ممكن غيرك ميلاحظهاش.',
+    personalityAr: 'بتاخد بالك من التفاصيل وبتدور على حاجات بتتكرر في البيانات عشان تفهمها.',
     palette: {
       vivid: '#C27BFF',
       deep: '#30124C',
@@ -117,11 +116,11 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     emblem: 'chart',
     motifs: ['Charts', 'Map documents', 'Coordinates', 'Constellations'],
     artwork: {
-      src: '/assets/characters/data-science.png',
+      src: '/assets/characters/data-science.webp',
       ...CHARACTER_ARTWORK_SIZE,
-      alt: 'قرصان بنسجي بقبعة عريضة، ماسك لوحية بيانية مضيئة',
+      alt: 'قرصان لابس بنفسجي وقبعة عريضة، ماسك لوحة عليها رسوم بيانية مضيئة',
     },
-    discoveryNoteAr: 'دي مجرد بداية المغامرة. تقدر تستكشف أي Track يعجبك!',
+    discoveryNoteAr: 'النتيجة اقتراح، مش قرار. جرّب أي مسار يعجبك.',
   },
 
   cybersecurity: {
@@ -141,11 +140,11 @@ export const CHARACTERS: Record<TrackId, CharacterDefinition> = {
     emblem: 'shield',
     motifs: ['Shield', 'Lock', 'Mask', 'Defensive barriers'],
     artwork: {
-      src: '/assets/characters/cybersecurity.png',
+      src: '/assets/characters/cybersecurity.webp',
       ...CHARACTER_ARTWORK_SIZE,
-      alt: 'قرصان أخضر بقناع، ماسك ورقة كود خضراء مضيئة',
+      alt: 'قرصان لابس أخضر وقناع، ماسك ورقة كود خضرا مضيئة',
     },
-    discoveryNoteAr: 'دي مجرد بداية المغامرة. تقدر تستكشف أي Track يعجبك!',
+    discoveryNoteAr: 'النتيجة اقتراح، مش قرار. جرّب أي مسار يعجبك.',
   },
 };
 

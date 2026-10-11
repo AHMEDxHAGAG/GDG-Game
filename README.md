@@ -18,6 +18,9 @@ Landing → Quiz Q1..Q10 → Analyzing → Ranked matches → Pick one → Card 
 
 - Design source of truth: `assests/UI/` (spec bundle + reference screenshots)
   and `assests/Characters/` (the five production pirate PNGs).
+- Rich scene backgrounds, parchment controls, and frames use the curated assets
+  documented in `docs/UI_ASSET_REVAMP.md`. The card is an identity poster; full
+  strengths, traits, and recommendations appear on the result page.
 - Projector screen at `/present` with a configurable QR code.
 - Session resume, RTL-safe Arabic/English copy, reduced-motion support, and a
   client-side 1080×1350 PNG export.
@@ -26,9 +29,10 @@ Landing → Quiz Q1..Q10 → Analyzing → Ranked matches → Pick one → Card 
 
 ```bash
 npm install
+npm run assets:prepare # regenerate optimized artwork after source changes
 npm run dev        # http://localhost:3000
-npm run test       # vitest (81 tests)
-npm run test:e2e   # playwright (106 tests, builds + serves the app itself)
+npm run test       # vitest
+npm run test:e2e   # playwright (builds + serves the app itself)
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint (flat config)
 npm run build      # production build
@@ -101,10 +105,11 @@ src/
     tracks/            # gallery screen
     reveal/            # ResultScene, ResultCard (PNG export), ResultActions
   config/              # characters (the five personas), site
-  generated/           # artwork-manifest.ts — AUTO-GENERATED, do not edit
+  generated/           # artwork manifest and UI asset catalogue — generated
   lib/                 # ids, typed route builders
 assests/               # supplied design source — do not modify
-public/assets/characters/  # the five PNGs, named by TrackId
+public/assets/characters/  # originals and responsive WebPs, named by TrackId
+public/assets/ui/      # curated scene, control, emblem, and poster derivatives
 docs/                  # AGENT_CONTEXT, OVERHAUL_IMPLEMENTATION_PLAN
 tools/                 # artwork manifest generator, copy checker
 e2e/                   # Playwright specs
@@ -112,12 +117,13 @@ e2e/                   # Playwright specs
 
 ## Character artwork
 
-The five cutouts live in `public/assets/characters/`, named by `TrackId`. Adding
-or renaming a file is enough — `tools/generate-artwork-manifest.mjs` regenerates
+The optimized cutouts live in `public/assets/characters/`, named by `TrackId`.
+Run `npm run assets:prepare` after updating the originals — `tools/generate-artwork-manifest.mjs` regenerates
 `src/generated/artwork-manifest.ts` on `predev`, `prebuild` and `pretest`, and the
 UI falls back to a designed placeholder for any track with no file on disk.
 
-All five are 1024×1536 transparent PNGs (2:3 portrait, not 1:1). They render as
+The sources are 1024×1536 transparent PNGs. Production WebPs are 768×1152 with
+256px and 512px width variants (2:3 portrait, not 1:1). They render as
 plain `<img>` with explicit dimensions rather than `next/image`, because the PNG
 export re-fetches every image URL.
 

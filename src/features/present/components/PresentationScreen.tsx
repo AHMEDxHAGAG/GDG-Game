@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import QRCode from 'qrcode';
 
+import { UI_ASSETS } from '@/config/ui-assets';
 import { ui } from '@/content/ui';
 import { CHARACTER_LIST } from '@/config/characters';
 import { SITE_URL, site } from '@/config/site';
@@ -67,20 +68,23 @@ export function PresentationScreen(): React.JSX.Element {
   const qrDataUrl = qr && qr.url === joinUrl ? qr.dataUrl : null;
 
   return (
-    <NauticalBackground withCompass>
+    <NauticalBackground scene="harbour" withCompass>
       <div
         className="mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-6 py-6"
         data-scene="present"
       >
-        <header className="flex items-center justify-between">
+        <header className="flex flex-wrap items-center justify-between gap-3">
           <ExpeditionBrand />
-          <p dir="ltr" className="font-brand text-xs font-bold tracking-[0.25em] text-text-secondary uppercase">
+          <p
+            dir="ltr"
+            className="font-brand text-xs font-bold tracking-[0.25em] text-text-secondary uppercase"
+          >
             {site.taglineEn}
           </p>
         </header>
 
         <main className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-bold tracking-[0.25em] text-accent-gold uppercase">
               {ui.brand.organization} · {ui.brand.campus}
             </p>
@@ -91,16 +95,17 @@ export function PresentationScreen(): React.JSX.Element {
               <span className="block">{ui.landing.headlineLines[0]}</span>
               <span className="block">{ui.landing.headlineLines[1]}</span>
             </h1>
-            <p className="mt-4 text-3xl font-extrabold text-text-primary">
-              {ui.present.headline}
-            </p>
+            <p className="mt-4 text-3xl font-extrabold text-text-primary">{ui.present.headline}</p>
             <p className="mt-2 max-w-md text-lg leading-relaxed font-semibold text-text-secondary">
               {ui.present.sub}
             </p>
 
             <ol className="mt-6 space-y-2">
               {ui.present.steps.map((step, index) => (
-                <li key={step} className="flex items-center gap-3 text-[1rem] font-bold text-text-primary">
+                <li
+                  key={step}
+                  className="flex items-center gap-3 text-[1rem] font-bold text-text-primary"
+                >
                   <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-accent-gold/70 bg-surface text-sm font-extrabold text-accent-gold">
                     {index + 1}
                   </span>
@@ -110,8 +115,8 @@ export function PresentationScreen(): React.JSX.Element {
             </ol>
           </div>
 
-          <div className="flex flex-col items-center">
-            <div className="pixel-frame rounded-lg bg-parchment-100 p-4 shadow-[0_0_40px_rgba(255,185,97,0.18)]">
+          <div className="flex min-w-0 flex-col items-center">
+            <div className="pixel-frame max-w-full rounded-lg bg-parchment-100 p-4 shadow-[0_0_40px_rgba(255,185,97,0.18)]">
               {qrDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- a data URL from qrcode; next/image would add nothing
                 <img
@@ -119,10 +124,10 @@ export function PresentationScreen(): React.JSX.Element {
                   alt={`QR code: ${joinUrl}`}
                   width={240}
                   height={240}
-                  className="size-60"
+                  className="h-auto w-[240px] max-w-full"
                 />
               ) : (
-                <div className="grid size-60 place-items-center p-6 text-center text-sm font-bold text-ink">
+                <div className="grid aspect-square w-[240px] max-w-full place-items-center p-6 text-center text-sm font-bold text-ink">
                   <span dir="ltr">{joinUrl}</span>
                 </div>
               )}
@@ -130,30 +135,39 @@ export function PresentationScreen(): React.JSX.Element {
             <p dir="ltr" className="mt-3 text-lg font-extrabold tracking-wide text-text-primary">
               {ui.present.scan}
             </p>
-            <p dir="ltr" className="max-w-xs truncate text-sm font-bold text-text-secondary">
+            <p dir="ltr" className="max-w-full truncate text-sm font-bold text-text-secondary">
               {joinUrl}
             </p>
           </div>
         </main>
 
-        <footer>
-          <ul className="grid grid-cols-5 gap-2">
+        <footer className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element -- decorative local pier */}
+          <img
+            src={UI_ASSETS.pier.src}
+            alt=""
+            aria-hidden="true"
+            width={UI_ASSETS.pier.width}
+            height={UI_ASSETS.pier.height}
+            className="pointer-events-none absolute inset-x-0 bottom-8 -z-10 h-28 w-full object-fill opacity-80"
+          />
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">
             {CHARACTER_LIST.map((character) => (
               <li
                 key={character.id}
-                className="flex flex-col items-center rounded-md border-2 bg-surface/80 px-1 py-2 text-center"
+                className="flex min-w-0 flex-col items-center px-1 py-2 text-center"
                 style={{ borderColor: `${character.palette.vivid}55` }}
               >
-                <span className="h-20 w-14">
+                <span className="block aspect-[2/3] w-full max-w-24 sm:max-w-32">
                   <CharacterArtwork character={character} className="h-full w-full" />
                 </span>
                 <span
-                  className="mt-1 text-[0.65rem] font-extrabold tracking-wide"
+                  className="mt-1 text-sm font-extrabold tracking-wide"
                   style={{ color: character.palette.vivid }}
                 >
                   {character.titleAr}
                 </span>
-                <span dir="ltr" className="text-[0.6rem] font-bold text-text-secondary">
+                <span dir="ltr" className="max-w-full text-xs font-bold text-text-secondary">
                   {character.trackName}
                 </span>
               </li>

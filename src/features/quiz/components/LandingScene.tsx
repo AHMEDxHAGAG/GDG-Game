@@ -6,11 +6,12 @@ import { useEffect, useId, useState } from 'react';
 import { Anchor, Compass, Globe, RotateCcw, SkipForward } from 'lucide-react';
 
 import { ui } from '@/content/ui';
+import { UI_ASSETS } from '@/config/ui-assets';
 import { CHARACTER_LIST } from '@/config/characters';
 import { MAX_USERNAME_LENGTH } from '@/config/site';
 import { useQuiz } from '@/features/quiz/state/QuizProvider';
 import { resultRoute } from '@/lib/routes';
-import { NauticalBackground } from '@/components/shared/NauticalBackground';
+import { ExpeditionBrand, NauticalBackground } from '@/components/shared/NauticalBackground';
 import { PirateButton } from '@/components/shared/PirateButton';
 import { CharacterArtwork } from '@/components/characters/CharacterArtwork';
 
@@ -86,17 +87,14 @@ export function LandingScene(): React.JSX.Element {
   }
 
   return (
-    <NauticalBackground withCompass>
+    <NauticalBackground scene="harbour" withCompass>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-24 -z-10 flex justify-center opacity-35">
+        {/* eslint-disable-next-line @next/next/no-img-element -- decorative local ship */}
+        <img src={UI_ASSETS.ship.src} alt="" width={UI_ASSETS.ship.width} height={UI_ASSETS.ship.height} className="animate-ship-drift h-[430px] w-auto sm:h-[600px]" />
+      </div>
       <div className="flex min-h-[100dvh] flex-col">
         <header className="flex items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
-          <span dir="ltr" className="flex items-center gap-2">
-            <span className="font-brand text-lg font-bold tracking-tight text-text-primary">
-              {ui.brand.organization}
-            </span>
-            <span className="font-brand text-[0.6rem] font-medium tracking-[0.2em] text-text-secondary">
-              {ui.brand.campus}
-            </span>
-          </span>
+          <ExpeditionBrand />
           <span className="flex items-center gap-1.5 text-xs font-bold text-text-secondary">
             <Globe className="size-3.5" aria-hidden="true" />
             <span dir="ltr">{ui.locale.code}</span>
@@ -129,9 +127,9 @@ export function LandingScene(): React.JSX.Element {
               spec, so it is rendered last and sits on top. */}
           <div
             aria-hidden="true"
-            className="animate-rise-in mt-auto w-full [animation-delay:220ms] pt-4"
+            className="crew-stage animate-rise-in [animation-delay:220ms]"
           >
-            <ul className="flex items-end justify-center gap-1 sm:gap-3">
+            <ul className="flex items-end justify-center">
               {[4, 3, 2, 1, 0].map((index, position) => {
                 const character = CHARACTER_LIST[index]!;
                 const isHero = position === 2;
@@ -140,23 +138,26 @@ export function LandingScene(): React.JSX.Element {
                     key={character.id}
                     className={
                       isHero
-                        ? 'animate-float-idle relative z-10 w-[26%] max-w-[11rem]'
-                        : 'relative w-[17%] max-w-[7rem]'
+                        ? 'animate-float-idle relative z-10 w-[34%] max-w-[15rem] shrink-0'
+                        : 'relative w-[24%] max-w-[11rem] shrink-0'
                     }
                   >
                     <CharacterArtwork
                       character={character}
-                      priority={isHero}
+                      priority
+                      sizes="(min-width: 768px) 220px, 32vw"
                       className="h-auto w-full"
                     />
                   </li>
                 );
               })}
             </ul>
+            {/* eslint-disable-next-line @next/next/no-img-element -- decorative local pier */}
+            <img src={UI_ASSETS.pier.src} alt="" width={UI_ASSETS.pier.width} height={UI_ASSETS.pier.height} className="crew-pier" />
             <p className="sr-only">{ui.landing.charactersLabel}</p>
           </div>
 
-          <div className="animate-rise-in mt-5 w-full max-w-sm [animation-delay:280ms]">
+          <div className="animate-rise-in mt-3 w-full max-w-sm [animation-delay:280ms]">
             <label
               htmlFor={inputId}
               className="mb-1.5 flex items-baseline justify-between gap-2 text-[0.9rem] font-bold text-text-primary"
@@ -202,10 +203,10 @@ export function LandingScene(): React.JSX.Element {
                 <span className="sr-only sm:hidden">{ui.username.skip}</span>
               </PirateButton>
             </div>
-            <p className="mt-1.5 text-[0.72rem] text-text-secondary">{ui.username.hint}</p>
+            <p className="mt-1.5 text-sm text-text-secondary">{ui.username.hint}</p>
           </div>
 
-          <div className="animate-rise-in mt-5 w-full max-w-sm [animation-delay:340ms]">
+          <div className="animate-rise-in mt-3 w-full max-w-sm [animation-delay:340ms]">
             <PirateButton
               fullWidth
               onClick={handleStart}

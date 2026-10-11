@@ -65,19 +65,21 @@ test.describe('result card', () => {
     await expect(page.getByTestId('result-card-username')).toHaveCount(0);
   });
 
-  test('carries the chosen persona’s full copy', async ({ page }) => {
+  test('shows the full explanation on the page and identity on the poster', async ({ page }) => {
     const { copy: content } = await chooseAndOpenCard(page, 0);
     const card = page.getByTestId('result-card');
 
     await expect(card).toContainText(content.eyebrow);
     await expect(card).toContainText(content.taglineAr);
-    await expect(card).toContainText(content.strengthTitleAr);
-    await expect(card).toContainText(content.strengthAr);
-    await expect(card).toContainText(content.traitsTitleAr);
+    const details = page.getByTestId('result-details');
+    await expect(card).not.toContainText(content.strengthTitleAr);
+    await expect(details).toContainText(content.strengthTitleAr);
+    await expect(details).toContainText(content.strengthAr);
+    await expect(details).toContainText(content.traitsTitleAr);
     for (const trait of content.traits) {
-      await expect(card).toContainText(trait);
+      await expect(details).toContainText(trait);
     }
-    await expect(card).toContainText(content.secondaryEyebrowAr);
+    await expect(details).toContainText(content.secondaryEyebrowAr);
   });
 
   test('every track can reach a card', async ({ page }) => {

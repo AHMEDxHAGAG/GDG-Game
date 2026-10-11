@@ -5,7 +5,7 @@ import { QuizScene } from '@/features/quiz/components/QuizScene';
 
 export const metadata: Metadata = {
   title: 'الاختبار',
-  description: 'عشرة أسئلة اختيار من متعدد، وكل إجابة بتقرّبك من شخصيتك.',
+  description: '١٠ أسئلة، اختار الإجابة الأقرب ليك في كل سؤال.',
 };
 
 export default function QuizPage(): React.JSX.Element {

@@ -1,0 +1,137 @@
+{
+  "harbour": {
+    "src": "/assets/ui/harbour.webp",
+    "width": 675,
+    "height": 1200
+  },
+  "cabin": {
+    "src": "/assets/ui/cabin.webp",
+    "width": 675,
+    "height": 1200
+  },
+  "gallery": {
+    "src": "/assets/ui/gallery.webp",
+    "width": 675,
+    "height": 1200
+  },
+  "voyage": {
+    "src": "/assets/ui/voyage.webp",
+    "width": 675,
+    "height": 1200
+  },
+  "deck": {
+    "src": "/assets/ui/deck.webp",
+    "width": 675,
+    "height": 1200
+  },
+  "ship": {
+    "src": "/assets/ui/ship.webp",
+    "width": 537,
+    "height": 768
+  },
+  "pier": {
+    "src": "/assets/ui/pier.webp",
+    "width": 1200,
+    "height": 408
+  },
+  "brigantine": {
+    "src": "/assets/ui/brigantine.webp",
+    "width": 512,
+    "height": 384
+  },
+  "lantern": {
+    "src": "/assets/ui/lantern.webp",
+    "width": 88,
+    "height": 256
+  },
+  "primary": {
+    "src": "/assets/ui/primary.webp",
+    "width": 1000,
+    "height": 249
+  },
+  "secondary": {
+    "src": "/assets/ui/secondary.webp",
+    "width": 1000,
+    "height": 223
+  },
+  "question": {
+    "src": "/assets/ui/question.webp",
+    "width": 1000,
+    "height": 655
+  },
+  "scroll": {
+    "src": "/assets/ui/scroll.webp",
+    "width": 1000,
+    "height": 533
+  },
+  "answer": {
+    "src": "/assets/ui/answer.webp",
+    "width": 1000,
+    "height": 204
+  },
+  "panel": {
+    "src": "/assets/ui/panel.webp",
+    "width": 1000,
+    "height": 280
+  },
+  "collectible": {
+    "src": "/assets/ui/collectible.webp",
+    "width": 359,
+    "height": 768
+  },
+  "gear": {
+    "src": "/assets/ui/gear.webp",
+    "width": 64,
+    "height": 64
+  },
+  "brain": {
+    "src": "/assets/ui/brain.webp",
+    "width": 64,
+    "height": 62
+  },
+  "code": {
+    "src": "/assets/ui/code.webp",
+    "width": 64,
+    "height": 39
+  },
+  "bars": {
+    "src": "/assets/ui/bars.webp",
+    "width": 64,
+    "height": 50
+  },
+  "shield": {
+    "src": "/assets/ui/shield.webp",
+    "width": 56,
+    "height": 64
+  },
+  "gear-ornate": {
+    "src": "/assets/ui/gear-ornate.webp",
+    "width": 256,
+    "height": 253
+  },
+  "brain-ornate": {
+    "src": "/assets/ui/brain-ornate.webp",
+    "width": 254,
+    "height": 256
+  },
+  "code-ornate": {
+    "src": "/assets/ui/code-ornate.webp",
+    "width": 256,
+    "height": 165
+  },
+  "bars-ornate": {
+    "src": "/assets/ui/bars-ornate.webp",
+    "width": 256,
+    "height": 201
+  },
+  "shield-ornate": {
+    "src": "/assets/ui/shield-ornate.webp",
+    "width": 220,
+    "height": 256
+  },
+  "poster-frame": {
+    "src": "/assets/ui/poster-frame.webp",
+    "width": 1080,
+    "height": 1350
+  }
+}

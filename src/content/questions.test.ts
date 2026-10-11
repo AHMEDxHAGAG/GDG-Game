@@ -1,17 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
 import { QUESTIONS, QUESTION_BY_ID, RANK_LABELS_AR } from '@/content/questions';
-import { PRIMARY_WEIGHT, QUESTION_COUNT, SECONDARY_WEIGHT, TOTAL_POINTS } from '@/features/quiz/types';
+import {
+  PRIMARY_WEIGHT,
+  QUESTION_COUNT,
+  SECONDARY_WEIGHT,
+  TOTAL_POINTS,
+} from '@/features/quiz/types';
 import { TRACK_IDS, type TrackId } from '@/features/characters/types';
 
 const trackSet = new Set<string>(TRACK_IDS);
 
-/** Question 3 reproduces the approved spec screenshot; these are its exact words. */
-const SPEC_Q3_TEXTS: readonly string[] = [
-  'أبني حلاً تقنياً موثوقاً يصلح المشكلة من جذورها.',
-  'أستخدم الذكاء الاصطناعي لتقديم حلول ذكية ومبتكرة.',
-  'أصمم واجهة سهلة الاستخدام تجعل التجربة أفضل للطلاب.',
-  'أحلل البيانات لأفهم سبب المشكلة وأجد الأنماط فيها.',
+/** The reference scenario uses the same Egyptian voice as the rest of the bank. */
+const EGYPTIAN_Q3_TEXTS: readonly string[] = [
+  'أصلّح السبب الأساسي بكود نقدر نعتمد عليه.',
+  'أشوف الذكاء الاصطناعي ممكن يساعدنا نحلها إزاي.',
+  'أظبط الواجهة عشان تبقى أسهل للطلبة في الاستخدام.',
+  'أحلّل البيانات وأدوّر على نمط يوضّح سبب المشكلة.',
 ];
 
 describe('question bank shape', () => {
@@ -132,7 +137,8 @@ describe('fairness invariants', () => {
     // answers × 4 points = TOTAL_POINTS. That a complete answer set always
     // sums to TOTAL_POINTS is a scoring invariant, asserted in
     // `scoreAnswers.test.ts`, not here.
-    const bankWeight = [...primaries.values()].reduce((sum, n) => sum + n * PRIMARY_WEIGHT, 0) +
+    const bankWeight =
+      [...primaries.values()].reduce((sum, n) => sum + n * PRIMARY_WEIGHT, 0) +
       [...secondaries.values()].reduce((sum, n) => sum + n * SECONDARY_WEIGHT, 0);
 
     expect(bankWeight).toBe(QUESTION_COUNT * 4 * (PRIMARY_WEIGHT + SECONDARY_WEIGHT));
@@ -142,16 +148,15 @@ describe('fairness invariants', () => {
   });
 });
 
-describe('approved spec content', () => {
-  it("reproduces question 3's option texts verbatim", () => {
+describe('reference scenario', () => {
+  it("uses Egyptian wording for question 3's options", () => {
     const q3 = QUESTION_BY_ID.get('q3');
     expect(q3).toBeDefined();
-    expect(q3?.options.map((o) => o.text)).toEqual(SPEC_Q3_TEXTS);
+    expect(q3?.options.map((o) => o.text)).toEqual(EGYPTIAN_Q3_TEXTS);
   });
 
   it('makes cybersecurity reachable from question 3 via a secondary weight', () => {
-    // The spec flags that its worked example omits security entirely. This is
-    // the one deliberate deviation from the approved screenshot.
+    // The original example omits security as a primary; the secondary keeps it reachable.
     const q3 = QUESTION_BY_ID.get('q3');
     expect(q3?.absentTrack).toBe('cybersecurity');
     const secondaryTracks = q3?.options.map((o) => o.secondary) ?? [];

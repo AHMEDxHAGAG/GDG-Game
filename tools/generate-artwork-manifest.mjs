@@ -1,16 +1,6 @@
 /**
- * Build-time artwork manifest.
- *
- * The character config points at `public/assets/characters/<track>.png` so
- * that dropping a real illustration into place is the only step needed to ship
- * it. Until those files exist, asking the browser for them means a guaranteed
- * 404 (and a broken-image flash before the fallback kicks in) on every reveal,
- * gallery and projector screen — exactly what must not happen in front of a
- * room at an orientation event.
- *
- * So we record which files actually exist at build time. The result is a tiny
- * committed module; `prebuild`/`predev`/`pretest` regenerate it, so adding a
- * PNG still needs no code change.
+ * Build-time availability of optimized character artwork.
+ * Run assets:prepare after updating originals; dev/build/test refresh availability.
  */
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -20,13 +10,14 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const charactersDir = join(root, 'public', 'assets', 'characters');
 const outFile = join(root, 'src', 'generated', 'artwork-manifest.ts');
 
-const EXTENSIONS = /\.(png|webp|avif|svg)$/i;
+const EXTENSIONS = /\.webp$/i;
 
 /** Track ids that have a real illustration available. */
 const available = new Set();
 try {
   for (const entry of readdirSync(charactersDir)) {
-    if (EXTENSIONS.test(entry)) available.add(entry.replace(EXTENSIONS, ''));
+    // Responsive size variants are not separate characters.
+    if (EXTENSIONS.test(entry) && !/-\d+\./.test(entry)) available.add(entry.replace(EXTENSIONS, ''));
   }
 } catch {
   // No characters directory yet — every track falls back to the placeholder.

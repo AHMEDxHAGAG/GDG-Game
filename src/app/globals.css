@@ -1,5 +1,192 @@
 @import 'tailwindcss';
 
+/* Curated artwork skins. Nine-slice borders keep corners intact as Arabic wraps. */
+.scene-stage {
+  background: #090f22;
+}
+.scene-backdrop {
+  max-height: 1100px;
+}
+.scene-image {
+  object-position: center 42%;
+}
+.scene-scrim {
+  background: linear-gradient(
+    180deg,
+    #090f2240 0%,
+    #090f2260 35%,
+    #090f22bb 80%,
+    #090f22 100%
+  );
+}
+[data-background='cabin'] .scene-scrim,
+[data-background='gallery'] .scene-scrim {
+  background: linear-gradient(#090f2270, #090f22aa 70%, #090f22);
+}
+.rpg-button {
+  border: 12px solid transparent;
+  padding: 6px 18px;
+  border-image-slice: 110 140 fill;
+  border-image-width: 12px;
+  border-image-repeat: stretch;
+  filter: drop-shadow(0 4px 6px #0006);
+}
+.rpg-button-primary {
+  border-image-source: url('/assets/ui/primary.webp');
+  background: #8b1728;
+  background-clip: padding-box;
+}
+.rpg-button-secondary {
+  border-image-source: url('/assets/ui/secondary.webp');
+  background: #101a2a;
+  background-clip: padding-box;
+}
+.parchment-panel {
+  border: 22px solid transparent;
+  border-image-slice: 120 fill;
+  border-image-width: 22px;
+  border-image-repeat: stretch;
+  background: #f3d4a8;
+  background-clip: padding-box;
+  filter: drop-shadow(0 8px 20px #0004);
+}
+.parchment-question {
+  border-image-source: url('/assets/ui/question.webp');
+}
+.parchment-scroll {
+  border-image-source: url('/assets/ui/scroll.webp');
+  border-image-slice: 130 180 fill;
+  border-image-width: 22px 30px;
+}
+.answer-strip {
+  border: 12px solid transparent;
+  border-image: url('/assets/ui/answer.webp') 70 110 fill / 12px stretch;
+  background: #f3d4a8;
+  background-clip: padding-box;
+}
+.answer-strip[data-checked='true'] {
+  outline: 3px solid var(--option-accent);
+  outline-offset: 2px;
+}
+.answer-strip:has(input:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 5px;
+}
+.navy-panel {
+  border: 12px solid transparent;
+  border-image: url('/assets/ui/panel.webp') 70 90 fill / 12px stretch;
+  background: #0c1627;
+  background-clip: padding-box;
+}
+.collectible-card {
+  border: 20px solid transparent;
+  border-image: url('/assets/ui/collectible.webp') 130 110 fill / 20px stretch;
+  background: #0b1525;
+  background-clip: padding-box;
+}
+.crew-stage {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 16px auto 0;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+.crew-stage ul {
+  position: relative;
+  z-index: 1;
+  gap: 0;
+  padding-bottom: 20px;
+}
+.crew-stage li {
+  margin-inline: -2%;
+}
+.crew-stage .crew-pier {
+  position: absolute;
+  width: 100%;
+  height: 26%;
+  bottom: -2%;
+  object-fit: fill;
+}
+.poster-content {
+  font-size: clamp(11px, 3.3vw, 16px);
+}
+.quiz-layout {
+  container: quiz / inline-size;
+}
+.matches-layout {
+  container: matches / inline-size;
+}
+
+@media (min-width: 768px) {
+  .scene-image {
+    object-fit: cover;
+    object-position: center 45%;
+    opacity: 0.65;
+  }
+  [data-background='harbour'] .scene-image {
+    object-position: center 75%;
+  }
+  .scene-backdrop {
+    background: radial-gradient(ellipse at top, #20314a, #090f22 70%);
+  }
+  .scene-scrim {
+    background:
+      linear-gradient(90deg, #090f22aa, #090f2230 40%, #090f22aa),
+      linear-gradient(0deg, #090f22, transparent 65%);
+  }
+  .crew-stage {
+    margin-top: 24px;
+  }
+}
+@media (max-width: 359px) {
+  .crew-stage li:first-child,
+  .crew-stage li:last-child {
+    opacity: 0.6;
+    width: 15%;
+  }
+}
+@container quiz (max-width: 20em) {
+  .quiz-question-title {
+    padding-inline-start: 0 !important;
+  }
+  .quiz-captain {
+    position: relative !important;
+    display: block;
+    height: 100px !important;
+    margin-inline-start: auto;
+    margin-bottom: -25px;
+    top: auto !important;
+    inset-inline-start: auto !important;
+  }
+  .quiz-question {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
+@container matches (max-width: 20em) {
+  .match-row {
+    flex-wrap: wrap;
+  }
+  .match-rank {
+    width: 36px;
+    height: 36px;
+  }
+  .match-art {
+    width: 56px;
+    height: 96px;
+  }
+  .match-copy {
+    flex-basis: 100%;
+  }
+  .match-score {
+    flex-basis: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * Design tokens
  * Values come from

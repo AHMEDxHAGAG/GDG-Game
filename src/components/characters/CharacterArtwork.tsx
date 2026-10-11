@@ -10,13 +10,15 @@ export interface CharacterArtworkProps {
   character: CharacterDefinition;
   className?: string;
   priority?: boolean;
+  sizes?: string;
+  decorative?: boolean;
 }
 
 /**
  * Renders the production character artwork when it is available and falls back
  * to the designed placeholder when it is not.
  *
- * Dropping `public/assets/characters/<track>.png` into place is enough — the
+ * Run `assets:prepare` to publish `public/assets/characters/<track>.webp`; the
  * build-time manifest picks it up automatically. The `onError` path stays as a
  * second line of defence for a wrong path or a stale build, so the UI never
  * shows a broken image during a live event.
@@ -32,6 +34,8 @@ export function CharacterArtwork({
   character,
   className,
   priority = false,
+  sizes = '(min-width: 1024px) 240px, 40vw',
+  decorative = false,
 }: CharacterArtworkProps): React.JSX.Element {
   const [failed, setFailed] = useState(false);
   const { artwork } = character;
@@ -42,7 +46,7 @@ export function CharacterArtwork({
 
   if (!showArtwork) {
     return (
-      <span className={className} data-artwork="placeholder">
+      <span className={className} data-artwork="placeholder" aria-hidden={decorative || undefined}>
         <PiratePlaceholder
           character={character}
           className="h-full w-full"
@@ -53,10 +57,12 @@ export function CharacterArtwork({
   }
 
   return (
-    <span className={className} data-artwork="final">
+    <span className={className} data-artwork="final" aria-hidden={decorative || undefined}>
       {/* eslint-disable-next-line @next/next/no-img-element -- see the note on html-to-image above */}
       <img
         src={artwork.src}
+        srcSet={`${artwork.src.replace('.webp', '-256.webp')} 256w, ${artwork.src.replace('.webp', '-512.webp')} 512w, ${artwork.src} 768w`}
+        sizes={sizes}
         alt={artwork.alt}
         width={artwork.width}
         height={artwork.height}

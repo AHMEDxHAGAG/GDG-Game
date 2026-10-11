@@ -11,6 +11,7 @@ import { toArabicDigits } from '@/content/tracks';
 import { getCharacter } from '@/config/characters';
 import { QUESTION_COUNT } from '@/features/quiz/types';
 import { useQuiz } from '@/features/quiz/state/QuizProvider';
+import { scoreAnswers } from '@/features/quiz/scoring/scoreAnswers';
 import { NauticalBackground } from '@/components/shared/NauticalBackground';
 import { ParchmentPanel } from '@/components/shared/ParchmentPanel';
 import { PirateButton } from '@/components/shared/PirateButton';
@@ -91,9 +92,7 @@ export function QuizScene(): React.JSX.Element {
           className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center justify-center gap-4 px-5 text-center"
           data-scene="quiz-empty"
         >
-          <h1 className="text-2xl font-extrabold text-text-primary">
-            {ui.errors.genericTitle}
-          </h1>
+          <h1 className="text-2xl font-extrabold text-text-primary">{ui.errors.genericTitle}</h1>
           <PirateButton
             onClick={() => {
               restart();
@@ -108,6 +107,11 @@ export function QuizScene(): React.JSX.Element {
     );
   }
 
+  const scores = scoreAnswers(state.answers);
+  const captain = getCharacter(
+    scores.answeredCount > 0 ? scores.ranking[0]!.trackId : 'web-development',
+  );
+
   const handleNext = () => {
     if (isLast) {
       submit();
@@ -118,17 +122,17 @@ export function QuizScene(): React.JSX.Element {
   };
 
   return (
-    <NauticalBackground withLantern>
+    <NauticalBackground scene="cabin" withLantern>
       <div className="flex min-h-[100dvh] flex-col">
         <main
-          className="mx-auto flex w-full max-w-[42.5rem] flex-1 flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6"
+          className="quiz-layout mx-auto flex w-full max-w-[42.5rem] flex-1 flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6"
           data-scene="quiz"
         >
           <QuestionProgress index={index} total={QUESTIONS.length} />
 
           {/* Parchment question. The captain overlaps its right edge but sits
               outside the text inset, per the spec. */}
-          <div className="relative mt-3">
+          <div className="quiz-question relative mt-3">
             <ParchmentPanel className="relative z-10 p-4 pt-5 sm:p-5" torn>
               {/* `ps` is the logical start, which in this RTL document is the
                   image-right — the side the captain overlaps. The extra inset
@@ -137,26 +141,23 @@ export function QuizScene(): React.JSX.Element {
                 ref={headingRef}
                 tabIndex={-1}
                 aria-describedby={legendId}
-                className="text-right ps-20 text-ink outline-none sm:ps-28"
+                className="quiz-question-title text-right ps-[80px] text-ink outline-none sm:ps-[112px]"
                 style={{ fontSize: 'clamp(1.05rem, 4.2vw, 1.3rem)', lineHeight: 1.65 }}
               >
                 {question.text}
               </h1>
             </ParchmentPanel>
 
-            {/* Decorative: the orange web captain, overlapping the parchment's
-                image-right edge exactly as the reference does. `start` is the
-                logical start, which is the image-right in this RTL document.
-                He sits above the panel (`z-20` vs `z-10`) — behind it he was
-                invisible — and the heading carries a matching inset so Arabic
-                never runs under him. */}
+            {/* The leading character follows all current answers, including edits. */}
             <CharacterArtwork
-              character={getCharacter('web-development')}
-              className="animate-float-idle pointer-events-none absolute -top-6 -start-2 z-20 h-28 w-auto opacity-95 sm:-top-8 sm:h-36 lg:h-44"
+              key={captain.id}
+              decorative
+              character={captain}
+              className="quiz-captain animate-float-idle pointer-events-none absolute -top-6 -start-2 z-20 h-[112px] w-auto opacity-95 sm:-top-8 sm:h-[144px] lg:h-[176px]"
             />
           </div>
 
-          <fieldset className="mt-4 border-0 p-0" aria-describedby={legendId}>
+          <fieldset className="mt-4 min-w-0 border-0 p-0" aria-describedby={legendId}>
             <legend id={legendId} className="sr-only">
               {ui.quiz.optionsLegend}
             </legend>
@@ -188,12 +189,12 @@ export function QuizScene(): React.JSX.Element {
 
           {/* Footer sits in flow, not fixed, so it can never cover an option on
               a short screen. */}
-          <div className="mt-4 flex gap-3 pb-2 sm:mt-5">
+          <div className="mt-4 flex flex-wrap gap-3 pb-2 sm:mt-5">
             <PirateButton
               variant="secondary"
               onClick={previousQuestion}
               disabled={index === 0}
-              className="flex-1"
+              className="flex-1 basis-32"
               icon={<ArrowRight className="size-4" />}
               data-testid="quiz-previous"
             >
@@ -202,7 +203,7 @@ export function QuizScene(): React.JSX.Element {
             <PirateButton
               onClick={handleNext}
               disabled={selected === undefined}
-              className="flex-1"
+              className="flex-1 basis-32"
               icon={<ArrowLeft className="size-4" />}
               data-testid="quiz-next"
             >
@@ -253,7 +254,7 @@ function OptionCard({
     <label
       htmlFor={inputId}
       data-checked={checked}
-      className={`group relative flex min-h-[4.25rem] w-full cursor-pointer items-center gap-3 rounded-md border-2 px-3 py-3 transition-colors ${
+      className={`answer-strip group relative flex min-h-[4.25rem] w-full cursor-pointer items-center gap-[12px] rounded-md border-2 px-[12px] py-3 transition-colors ${
         checked
           ? 'border-transparent bg-parchment-50 shadow-[0_0_0_3px_var(--option-accent),0_4px_14px_rgba(9,11,23,0.5)]'
           : 'border-parchment-600/50 bg-parchment-200 hover:border-parchment-500 hover:bg-parchment-100'
@@ -270,33 +271,40 @@ function OptionCard({
         className="peer sr-only"
       />
 
-      <span className="min-w-0 flex-1 text-right text-ink" style={{ fontSize: 'clamp(0.95rem, 3.6vw, 1.0625rem)', lineHeight: 1.6 }}>
+      <span
+        className="min-w-0 flex-1 text-right text-ink"
+        style={{ fontSize: 'clamp(0.95rem, 3.6vw, 1.0625rem)', lineHeight: 1.6 }}
+      >
         {text}
       </span>
 
       {/* Selection is signalled by shape and text, never colour alone. */}
       <span
         aria-hidden="true"
-        className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${
+        className={`grid size-[24px] shrink-0 place-items-center rounded-full border-2 ${
           checked ? 'border-transparent' : 'border-parchment-600/60'
         }`}
         style={checked ? { backgroundColor: accent } : undefined}
       >
-        {checked ? <Check className="size-4 text-parchment-50" strokeWidth={3} /> : null}
+        {checked ? <Check className="size-[16px] text-ink" strokeWidth={3} /> : null}
       </span>
 
       {/* Track icon last, so it lands on the image-left in this RTL row —
           matching the reference card. */}
       <span
         aria-hidden="true"
-        className="grid size-9 shrink-0 place-items-center rounded-full border-2"
+        className="grid size-[36px] shrink-0 place-items-center rounded-full border-2"
         style={{
           borderColor: checked ? accent : 'var(--color-parchment-600)',
           backgroundColor: checked ? `${accent}22` : 'rgb(251 243 223 / 0.6)',
           color: checked ? accent : 'var(--color-ink-soft)',
         }}
       >
-        <TrackEmblem emblem={icon} color={checked ? accent : 'var(--color-ink-soft)'} className="size-[62%]" />
+        <TrackEmblem
+          emblem={icon}
+          color={checked ? accent : 'var(--color-ink-soft)'}
+          className="size-[62%]"
+        />
       </span>
 
       {checked ? <span className="sr-only">{ui.quiz.selectedMark}</span> : null}
@@ -338,11 +346,7 @@ export function QuestionProgress({
               key={step}
               aria-hidden="true"
               className={`h-2 flex-1 rounded-full transition-colors ${
-                done
-                  ? 'bg-accent-red-high'
-                  : current
-                    ? 'bg-accent-gold'
-                    : 'bg-progress-inactive/60'
+                done ? 'bg-accent-red-high' : current ? 'bg-accent-gold' : 'bg-progress-inactive/60'
               }`}
             />
           );

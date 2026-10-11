@@ -11,6 +11,49 @@ import {
 } from './helpers';
 
 test.describe('question flow', () => {
+  test('the question character follows the leading result, edits, ties and reloads', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await gotoQuiz(page);
+    const captain = page.locator('.quiz-captain img');
+    const expectCaptain = async (track: string) => {
+      await expect(captain).toHaveAttribute('src', `/assets/characters/${track}.webp`);
+    };
+    await expectCaptain('web-development');
+    for (const [option, track] of [
+      [0, 'software-engineering'],
+      [1, 'ai'],
+      [2, 'web-development'],
+      [3, 'data-science'],
+    ] as const) {
+      await pickOption(page, 1, option);
+      await expectCaptain(track);
+    }
+
+    await pickOption(page, 1, 0);
+    await page.getByTestId('quiz-next').click();
+    await expectCaptain('software-engineering');
+    await pickOption(page, 2, 1);
+    // Equal scores use the same deterministic tie-break as the final ranking.
+    await expectCaptain('software-engineering');
+    await page.getByTestId('quiz-previous').click();
+    await pickOption(page, 1, 3);
+    await expectCaptain('ai');
+    await page.getByTestId('quiz-next').click();
+    await pickOption(page, 2, 3);
+    await expectCaptain('data-science');
+    await page.getByTestId('quiz-next').click();
+    await pickOption(page, 3, 0);
+    await expectCaptain('software-engineering');
+    await page.getByTestId('quiz-next').click();
+    await pickOption(page, 4, 3);
+    await expectCaptain('cybersecurity');
+    await page.reload();
+    await expectCaptain('cybersecurity');
+    await expectNoHorizontalOverflow(page);
+  });
+
   test('advances through all ten questions', async ({ page }) => {
     await gotoQuiz(page);
 
@@ -41,9 +84,8 @@ test.describe('question flow', () => {
     await expect(first).toHaveAttribute('data-checked', 'false');
     await first.click();
     await expect(first).toHaveAttribute('data-checked', 'true');
-    // A check glyph appears inside the selection affordance.
     // Selection is shown by a check glyph as well as by colour.
-    await expect(first.locator('svg')).toHaveCount(2);
+    await expect(first.locator('svg')).toBeVisible();
 
     // Selecting another option moves the state rather than adding to it.
     await second.click();
@@ -92,7 +134,6 @@ test.describe('question flow', () => {
     await page.locator('input[name="q1-option"]').first().focus();
     await page.keyboard.press('Space');
     await expect(page.locator('input[name="q1-option"]').first()).toBeChecked();
-
 
     await page.keyboard.press('ArrowDown');
     await expect(page.locator('input[name="q1-option"]').nth(1)).toBeChecked();

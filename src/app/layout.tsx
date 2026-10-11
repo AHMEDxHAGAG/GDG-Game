@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     template: `%s · ${site.title}`,
   },
   description:
-    'اكتشف شخصيتك: أجب على ١٠ أسئلة اختيار من متعدد، واعرف أي مسار في GDGoC AASTMT Aswan يناسبك، واختار شخصيتك وشارك الكارت.',
+    'جاوب على ١٠ أسئلة وشوف أنهي مسار في GDGoC AASTMT Aswan أقرب ليك، واختار شخصيتك وشارك الكارت.',
   applicationName: site.title,
   keywords: [
     'GDGoC',
@@ -74,7 +74,20 @@ export default function RootLayout({
       dir="rtl"
       className={`${cairo.variable} ${tajawal.variable} ${grotesk.variable}`}
     >
-      <body className="bg-background text-text-primary">{children}</body>
+      <body className="bg-background text-text-primary">
+        {children}
+        <footer className="border-t border-surface-border/40 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-center">
+          <a
+            href={site.authorGitHub}
+            target="_blank"
+            rel="noopener noreferrer"
+            dir="ltr"
+            className="inline-block min-h-11 max-w-full py-2 font-brand text-sm text-text-secondary underline decoration-accent-gold/60 underline-offset-4 hover:text-accent-gold"
+          >
+            GitHub · AHMEDxHAGAG
+          </a>
+        </footer>
+      </body>
     </html>
   );
 }

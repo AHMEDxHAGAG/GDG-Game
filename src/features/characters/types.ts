@@ -5,7 +5,7 @@
  * scoring matrix, the ranked-matches list, the result card and the gallery.
  *
  * The ids are kebab-case and are used verbatim as
- * `public/assets/characters/<id>.png` filenames, so changing one means renaming
+ * `public/assets/characters/<id>.webp` filenames, so changing one means renaming
  * the artwork file too — see `tools/generate-artwork-manifest.mjs`.
  */
 export const TRACK_IDS = [

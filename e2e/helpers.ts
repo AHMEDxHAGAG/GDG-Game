@@ -7,29 +7,29 @@ export const copy = {
   landingHeadline: 'اكتشف',
   usernameLabel: 'اسمك على الكارت إيه؟',
   startCta: 'ابدأ الاختبار',
-  skipUsername: 'مش هكتب',
+  skipUsername: 'من غير اسم',
   tracksCta: 'شوف المسارات',
 
   quizCounter: (index: number) => `السؤال ${ar(index)} من ${ar(10)}`,
   optionsLegend: 'اختار إجابة واحدة',
-  previous: 'السابق',
-  next: 'التالي',
-  submit: 'اكتشف شخصيتي',
+  previous: 'اللي فات',
+  next: 'كمّل',
+  submit: 'شوف النتيجة',
 
-  analyzing: 'جاري تحليل إجاباتك...',
+  analyzing: 'بنحسب نتيجتك…',
 
   matchesTitle: 'ترتيب شخصياتك',
-  matchesSubtitle: 'اختار الشخصية اللي حاسس إنها أقربلك',
+  matchesSubtitle: 'اختار الشخصية اللي شايفها أقرب ليك',
 
   rankLabels: ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس'],
   scoreLabel: (score: number) => `${ar(score)} نقطة`,
 
   save: 'احفظ الكارت',
-  saved: 'تم تحميل الكارت',
+  saved: 'الكارت اتحمّل',
   backToMatches: 'ارجع للترتيب',
-  restart: 'جرب تاني',
+  restart: 'جرّب تاني',
 
-  reset: 'امسح الإجابة',
+  reset: 'امسح إجاباتي',
   resumeTitle: 'عندك اختبار لسه مخلصتوش',
   resumeContinue: 'كمل الاختبار',
 
@@ -69,18 +69,9 @@ export async function gotoQuiz(page: Page, username?: string): Promise<void> {
  * `sr-only` (1px, clipped), so its own box is not where a finger lands. The
  * label is the real touch target and is what a visitor actually taps.
  */
-export async function pickOption(
-  page: Page,
-  question: number,
-  optionIndex: number,
-): Promise<void> {
-  await page
-    .locator(`label:has(input[name="q${question}-option"])`)
-    .nth(optionIndex)
-    .click();
-  await expect(
-    page.locator(`input[name="q${question}-option"]`).nth(optionIndex),
-  ).toBeChecked();
+export async function pickOption(page: Page, question: number, optionIndex: number): Promise<void> {
+  await page.locator(`label:has(input[name="q${question}-option"])`).nth(optionIndex).click();
+  await expect(page.locator(`input[name="q${question}-option"]`).nth(optionIndex)).toBeChecked();
 }
 
 /**

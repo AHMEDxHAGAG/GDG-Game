@@ -15,15 +15,11 @@ export interface PirateButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
  * not resize as it is pressed.
  */
 const BASE =
-  'relative inline-flex min-h-11 select-none items-center justify-center gap-2 rounded-md border-2 px-5 py-2.5 text-[0.95rem] font-extrabold leading-tight transition-transform duration-150 active:translate-y-[2px] disabled:pointer-events-none disabled:opacity-45';
+  'relative inline-flex min-h-11 select-none items-center justify-center gap-2 rounded-md border-2 px-6 py-3 text-[0.95rem] font-extrabold leading-tight transition-transform duration-150 active:translate-y-[2px] disabled:pointer-events-none disabled:opacity-45';
 
 const VARIANTS: Record<Variant, string> = {
-  // Thick dark-red plaque with bevelled gold trim — the landing CTA.
-  primary:
-    'border-accent-red-high bg-accent-red text-parchment-100 shadow-[0_3px_0_rgba(9,11,23,0.6),0_0_20px_rgba(255,185,97,0.18)] hover:bg-accent-red-high hover:shadow-[0_2px_0_rgba(9,11,23,0.6)] active:shadow-none',
-  // Outlined dark, per the spec's RpgButton contract.
-  secondary:
-    'border-surface-border bg-surface/80 text-text-primary shadow-[0_3px_0_rgba(9,11,23,0.5)] hover:border-accent-gold/70 hover:bg-surface-tinted hover:shadow-[0_2px_0_rgba(9,11,23,0.5)] active:shadow-none',
+  primary: 'rpg-button rpg-button-primary text-parchment-50 hover:brightness-110',
+  secondary: 'rpg-button rpg-button-secondary text-text-primary hover:brightness-125',
   ghost:
     'border-transparent bg-transparent text-text-secondary underline decoration-accent-gold decoration-2 underline-offset-4 hover:text-text-primary',
   danger:

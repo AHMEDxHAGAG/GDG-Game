@@ -5,8 +5,6 @@
  * deployment lives here. Nothing in `src/components` hardcodes copy.
  */
 
-const env = process.env;
-
 /**
  * Absolute URL used by the projector screen's QR code.
  *
@@ -14,7 +12,7 @@ const env = process.env;
  * working QR code without inventing a production address. Override with
  * `NEXT_PUBLIC_SITE_URL` before building for the real event.
  */
-export const SITE_URL = (env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/+$/, '');
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/+$/, '');
 
 export const site = {
   organization: 'GDGoC',
@@ -23,9 +21,10 @@ export const site = {
   campusLong: 'Arab Academy for Science, Technology & Maritime Transport — Aswan',
   title: 'Discover Your Personality',
   titleAr: 'اكتشف شخصيتك',
-  taglineAr: 'أي مسار في GDGoC يناسبك؟',
+  taglineAr: 'أنهي مسار في GDGoC يناسبك؟',
   taglineEn: 'Discover Your Personality',
   themeColor: '#090F22',
+  authorGitHub: 'https://github.com/AHMEDxHAGAG',
   /** Question count, mirrored from `content/questions.ts` for landing copy. */
   questionCount: 10,
   communityLinks: {

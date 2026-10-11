@@ -19,7 +19,7 @@ test.describe('landing', () => {
     await expect(page.getByRole('button', { name: copy.startCta })).toBeVisible();
 
     // Five characters, decorative — described once in text, not five times.
-    await expect(page.getByText('خمسة قراصنة')).toBeAttached();
+    await expect(page.getByText('خمس شخصيات')).toBeAttached();
     await expect(page.locator('[data-artwork="final"]')).toHaveCount(5);
   });
 
@@ -57,9 +57,13 @@ test.describe('landing', () => {
   });
 
   test('does not overflow horizontally at narrow widths', async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 720 });
-    await page.goto('/');
-    await expectNoHorizontalOverflow(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const width of [320, 360, 390, 430, 768, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/');
+      await expect(page.getByRole('button', { name: copy.startCta })).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+    }
   });
 
   test('keeps the CTA at a usable touch size', async ({ page }) => {

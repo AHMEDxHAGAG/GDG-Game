@@ -5,7 +5,7 @@ import { QuizProvider } from '@/features/quiz/state/QuizProvider';
 import { AnalyzingScene } from '@/features/quiz/components/AnalyzingScene';
 
 export const metadata: Metadata = {
-  title: 'جاري التحليل',
+  title: 'بنحسب نتيجتك',
   description: ui.analyzing.headline,
 };
 

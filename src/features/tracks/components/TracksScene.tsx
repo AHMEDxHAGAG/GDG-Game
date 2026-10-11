@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { PirateButton } from '@/components/shared/PirateButton';
 import { ui } from '@/content/ui';
 import { CHARACTER_LIST } from '@/config/characters';
 import { useQuiz } from '@/features/quiz/state/QuizProvider';
@@ -22,6 +24,35 @@ import { TrackEmblem } from '@/components/characters/TrackEmblem';
  */
 export function TracksScene(): React.JSX.Element {
   const router = useRouter();
+  const listRef = useRef<HTMLUListElement>(null);
+  const [active, setActive] = useState(0);
+  const scrollToCard = (index: number) => {
+    const item = listRef.current?.children[index];
+    item?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'instant'
+        : 'smooth',
+      block: 'nearest',
+      inline: 'start',
+    });
+  };
+  const updateActive = () => {
+    const list = listRef.current;
+    if (!list) return;
+    const bounds = list.getBoundingClientRect();
+    const centre = (bounds.left + bounds.right) / 2;
+    let nearest = 0;
+    let distance = Infinity;
+    Array.from(list.children).forEach((item, index) => {
+      const box = item.getBoundingClientRect();
+      const delta = Math.abs((box.left + box.right) / 2 - centre);
+      if (delta < distance) {
+        nearest = index;
+        distance = delta;
+      }
+    });
+    setActive(nearest);
+  };
   const { state, isHydrated, enterPhase, chooseTrack } = useQuiz();
   const hasRanking = isHydrated && state.ranking !== null;
   // `/result` has no page of its own — the back link has to name the track the
@@ -33,13 +64,13 @@ export function TracksScene(): React.JSX.Element {
   }, [isHydrated, enterPhase]);
 
   return (
-    <NauticalBackground>
+    <NauticalBackground scene="gallery">
       <main
         className="mx-auto flex min-h-[100dvh] w-full max-w-[74rem] flex-col px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6"
         data-scene="tracks"
       >
-        <header className="flex items-start justify-between gap-3">
-          <div>
+        <header className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 basis-64">
             <h1
               className="animate-rise-in text-shadow-pixel font-display font-black text-accent-gold"
               style={{ fontSize: 'clamp(1.5rem, 7vw, 2.25rem)' }}
@@ -61,14 +92,13 @@ export function TracksScene(): React.JSX.Element {
         {/* Horizontal scroll-snap carousel on mobile, five columns from 960px —
             both layouts come straight from the spec's all-tracks page. */}
         <ul
+          ref={listRef}
+          onScroll={updateActive}
           aria-label={ui.gallery.subtitle}
-          className="no-scrollbar mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3 xl:grid-cols-5"
+          className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-5"
         >
           {CHARACTER_LIST.map((character) => (
-            <li
-              key={character.id}
-              className="w-[70vw] max-w-[15rem] shrink-0 snap-center sm:w-auto"
-            >
+            <li key={character.id} className="w-[70vw] max-w-[15rem] shrink-0 snap-start sm:w-auto">
               <TrackCollectibleCard
                 character={character}
                 selectable={hasRanking}
@@ -80,6 +110,31 @@ export function TracksScene(): React.JSX.Element {
             </li>
           ))}
         </ul>
+
+        <div className="mt-4 flex flex-col items-center gap-2 sm:hidden">
+          <p className="text-sm text-text-secondary">{ui.gallery.swipeHint}</p>
+          <div className="flex items-center gap-[12px]">
+            <PirateButton
+              variant="secondary"
+              aria-label={ui.gallery.previous}
+              disabled={active === 0}
+              onClick={() => scrollToCard(active - 1)}
+            >
+              <ArrowRight className="size-[16px]" aria-hidden="true" />
+            </PirateButton>
+            <span role="status" className="min-w-[48px] text-center text-sm text-accent-gold">
+              {ui.gallery.position(active)}
+            </span>
+            <PirateButton
+              variant="secondary"
+              aria-label={ui.gallery.next}
+              disabled={active === 4}
+              onClick={() => scrollToCard(active + 1)}
+            >
+              <ArrowLeft className="size-[16px]" aria-hidden="true" />
+            </PirateButton>
+          </div>
+        </div>
 
         <p className="mt-auto pt-6 text-center text-[0.78rem] text-text-secondary">
           {ui.matches.footnote}
@@ -103,9 +158,11 @@ function TrackCollectibleCard({
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-0 h-2/3 opacity-25"
-        style={{ backgroundImage: `linear-gradient(180deg, ${character.palette.vivid}66 0%, transparent 100%)` }}
+        style={{
+          backgroundImage: `linear-gradient(180deg, ${character.palette.vivid}66 0%, transparent 100%)`,
+        }}
       />
-      <span className="relative mx-auto mt-3 block h-[62%] w-full">
+      <span className="relative mx-auto mt-3 block h-[68%] w-full">
         <CharacterArtwork character={character} className="h-full w-full" />
       </span>
       <span
@@ -115,15 +172,16 @@ function TrackCollectibleCard({
         <TrackEmblem
           emblem={character.emblem}
           color={character.palette.vivid}
-          className="mx-auto size-5"
+          appearance="ornate"
+          className="mx-auto size-9"
         />
         <span
-          className="mt-1 block text-center text-[0.85rem] leading-tight font-extrabold"
+          className="mt-1 block text-center text-[1rem] leading-tight font-extrabold"
           style={{ color: character.palette.vivid }}
         >
           {character.trackNameAr}
         </span>
-        <span dir="ltr" className="mt-0.5 block text-center text-[0.62rem] text-text-secondary">
+        <span dir="ltr" className="mt-0.5 block text-center text-sm text-text-secondary">
           {character.trackName}
         </span>
       </span>
@@ -131,7 +189,7 @@ function TrackCollectibleCard({
   );
 
   const shell =
-    'pixel-frame relative block aspect-[0.62] w-full overflow-hidden rounded-lg border-2 bg-surface text-start transition-transform duration-150';
+    'collectible-card relative block aspect-[0.62] w-full rounded-lg text-start transition-transform duration-150';
   const border = { borderColor: `${character.palette.vivid}99` };
 
   if (!selectable) {

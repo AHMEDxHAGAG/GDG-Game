@@ -5,7 +5,7 @@ import { MatchesScene } from '@/features/matches/components/MatchesScene';
 
 export const metadata: Metadata = {
   title: 'ترتيب شخصياتك',
-  description: 'شوف الشخصيات مرتبة حسب إجاباتك، واختار اللي حاسس إنها أقربلك.',
+  description: 'شوف الشخصيات مترتبة حسب إجاباتك، واختار اللي شايفها أقرب ليك.',
 };
 
 export default function MatchesPage(): React.JSX.Element {
