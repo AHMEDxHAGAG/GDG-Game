@@ -16,7 +16,6 @@ import { NauticalBackground } from '@/components/shared/NauticalBackground';
 import { ParchmentPanel } from '@/components/shared/ParchmentPanel';
 import { PirateButton } from '@/components/shared/PirateButton';
 import { CharacterArtwork } from '@/components/characters/CharacterArtwork';
-import { TrackEmblem } from '@/components/characters/TrackEmblem';
 
 /**
  * The MCQ screen.
@@ -165,8 +164,10 @@ export function QuizScene(): React.JSX.Element {
             <ul className="flex flex-col gap-2.5 sm:gap-3">
               {question.options.map((option) => {
                 const isSelected = selected === option.id;
-                // The icon and accent come from the track the answer leans to,
-                // which is also what teaches the visitor what each choice means.
+                // Deliberately no per-option track artwork: an emblem beside
+                // each answer tells the visitor which persona that answer feeds,
+                // so the cards stop reading as statements and start reading as a
+                // score sheet. The mapping is what the quiz is for, not a hint.
                 const track = getCharacter(option.primary);
                 return (
                   <li key={option.id}>
@@ -176,7 +177,6 @@ export function QuizScene(): React.JSX.Element {
                       checked={isSelected}
                       onSelect={() => selectOption(question.id, option.id)}
                       accent={track.palette.vivid}
-                      icon={track.emblem}
                       name={`${question.id}-option`}
                     />
                   </li>
@@ -238,7 +238,6 @@ function OptionCard({
   checked,
   onSelect,
   accent,
-  icon,
   name,
 }: {
   optionId: string;
@@ -246,7 +245,6 @@ function OptionCard({
   checked: boolean;
   onSelect: () => void;
   accent: string;
-  icon: React.ComponentProps<typeof TrackEmblem>['emblem'];
   name: string;
 }): React.JSX.Element {
   const inputId = `${name}-${optionId}`;
@@ -287,24 +285,6 @@ function OptionCard({
         style={checked ? { backgroundColor: accent } : undefined}
       >
         {checked ? <Check className="size-[16px] text-ink" strokeWidth={3} /> : null}
-      </span>
-
-      {/* Track icon last, so it lands on the image-left in this RTL row —
-          matching the reference card. */}
-      <span
-        aria-hidden="true"
-        className="grid size-[36px] shrink-0 place-items-center rounded-full border-2"
-        style={{
-          borderColor: checked ? accent : 'var(--color-parchment-600)',
-          backgroundColor: checked ? `${accent}22` : 'rgb(251 243 223 / 0.6)',
-          color: checked ? accent : 'var(--color-ink-soft)',
-        }}
-      >
-        <TrackEmblem
-          emblem={icon}
-          color={checked ? accent : 'var(--color-ink-soft)'}
-          className="size-[62%]"
-        />
       </span>
 
       {checked ? <span className="sr-only">{ui.quiz.selectedMark}</span> : null}
