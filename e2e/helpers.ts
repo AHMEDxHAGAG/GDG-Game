@@ -1,143 +1,156 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
-/** Copy is owned by `src/content/ui.ts`; the specs reference it through here. */
+import { QUESTIONS } from '../src/content/questions';
+import { TOTAL_POINTS } from '../src/features/quiz/types';
+
 export const copy = {
-  welcomeCta: 'يلا نبدأ المغامرة!',
-  nicknameSkip: 'مش هحدد، سميّني اللي تحب',
-  resumeTitle: 'عندك مغامرة لسه مخلصتهاش!',
-  resumeContinue: 'كمل المغامرة',
-  composerPlaceholder: 'اكتب ردك يا قرصان...',
-  send: 'إرسال',
-  revealSkip: 'تخطّي الكشف',
-  resultHeading: 'YOUR PIRATE IDENTITY',
-  chosen: 'THE CAPTAIN HAS CHOSEN…',
-  save: 'احفظ كارت الشخصية',
-  share: 'شارك قرصانك',
+  landingHeadline: 'اكتشف',
+  usernameLabel: 'اسمك على الكارت إيه؟',
+  startCta: 'ابدأ الاختبار',
+  skipUsername: 'مش هكتب',
+  tracksCta: 'شوف المسارات',
+
+  quizCounter: (index: number) => `السؤال ${ar(index)} من ${ar(10)}`,
+  optionsLegend: 'اختار إجابة واحدة',
+  previous: 'السابق',
+  next: 'التالي',
+  submit: 'اكتشف شخصيتي',
+
+  analyzing: 'جاري تحليل إجاباتك...',
+
+  matchesTitle: 'ترتيب شخصياتك',
+  matchesSubtitle: 'اختار الشخصية اللي حاسس إنها أقربلك',
+
+  rankLabels: ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الخامس'],
+  scoreLabel: (score: number) => `${ar(score)} نقطة`,
+
+  save: 'احفظ الكارت',
   saved: 'تم تحميل الكارت',
-  tryAgain: 'جرّب المغامرة تاني',
-  gallery: 'شوف القراصنة الخمسة',
-  galleryTitle: 'قراصنة GDGoC الخمسة',
-  reset: 'امسح الرحلة',
+  backToMatches: 'ارجع للترتيب',
+  restart: 'جرب تاني',
+
+  reset: 'امسح الإجابة',
+  resumeTitle: 'عندك اختبار لسه مخلصتوش',
+  resumeContinue: 'كمل الاختبار',
+
+  presentScan: 'Scan the QR Code',
 } as const;
 
-/**
- * The scripted voyage: the captain poses 7 scenarios after an intro beat, and
- * the closing line lands on the reply that answers the last one — so a full
- * playthrough is 8 player messages (1 opener + 7 scenario answers).
- */
-export const SCENARIO_COUNT = 7;
+/** Arabic-Indic digits, matching what the app renders. */
+export function ar(value: number): string {
+  return String(value).replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)] ?? d);
+}
 
-export const ANSWERS = [
-  'يلا نبدأ',
-  'هعمل خريطة وأكتب كل حاجة لقيتها',
-  'بفك الأجزاء دي ورا بعض الأول',
-  'هحاول أقرأ الأرقام وأربطها ببعض',
-  'هسمع الاتنين وأدور على حل يجمعهم',
-  'هخترع بوصلة بتقول لنا فين وإيه اللي فاكرينه',
-  'هقول حد يبعد الطاقم وأنا أتأكد بنفسي',
-  'الطريق الآمن، صح أنا مستعجل بس مش عايز نضيع',
-];
+/** The scene wrapper for the current route. */
+export function scene(page: Page): Locator {
+  return page.locator('[data-scene]');
+}
 
 /**
- * Waits for the conversation scene, skipping the boarding animation so specs
- * do not depend on its duration.
+ * Walks the landing screen to the quiz, optionally setting a username.
+ *
+ * The field is filled through the label so the test does not depend on the
+ * generated input id.
  */
-export async function gotoConversation(page: Page, nickname?: string): Promise<void> {
+export async function gotoQuiz(page: Page, username?: string): Promise<void> {
   await page.goto('/');
-  await expect(page.locator('[data-scene="welcome"]')).toBeVisible();
-
-  if (nickname !== undefined) {
-    await page.getByLabel('نندهلك بإيه يا قرصان؟').fill(nickname);
+  await expect(scene(page)).toHaveAttribute('data-scene', 'landing');
+  if (username !== undefined) {
+    await page.getByLabel(copy.usernameLabel).fill(username);
   }
-  await page.getByRole('button', { name: copy.welcomeCta }).click();
-  await expect(page.locator('[data-scene="conversation"]')).toBeVisible();
-}
-
-type CaptainState = 'ready' | 'thinking' | 'revealing' | 'result' | 'gone';
-
-/**
- * Polls the page until the captain has answered.
- *
- * Deliberately reads the DOM through a single `evaluate` instead of locators:
- * once the voyage closes the textarea unmounts, and any locator query that
- * waits for it would block for the full timeout instead of reporting state.
- */
-async function waitForCaptain(page: Page, timeoutMs = 20_000): Promise<CaptainState> {
-  const deadline = Date.now() + timeoutMs;
-  let last: CaptainState = 'thinking';
-
-  while (Date.now() < deadline) {
-    const probe = await page.evaluate(() => {
-      const scenes = Array.from(document.querySelectorAll('[data-scene]')).map((node) =>
-        node.getAttribute('data-scene'),
-      );
-      const textarea = document.querySelector('textarea');
-      return { scenes, enabled: textarea ? !textarea.disabled : null };
-    });
-
-    if (probe.scenes.includes('revealing')) return 'revealing';
-    if (probe.scenes.includes('result')) return 'result';
-    if (probe.enabled === true) return 'ready';
-    // No textarea at all (unmounted for the reveal) with no reveal scene yet.
-    last = probe.enabled === false ? 'thinking' : 'gone';
-    await page.waitForTimeout(100);
-  }
-
-  return last;
+  await page.getByRole('button', { name: copy.startCta }).click();
+  await expect(scene(page)).toHaveAttribute('data-scene', 'quiz');
 }
 
 /**
- * Sends one free-text answer and waits until the captain has responded.
+ * Clicks the option card at `optionIndex` (0-3) for the 1-based `question`.
  *
- * Returns 'revealing'/'result' if that reply closed the voyage, in which case
- * the composer is gone for good.
+ * Clicking the `<label>` rather than the `<input>` is deliberate: the radio is
+ * `sr-only` (1px, clipped), so its own box is not where a finger lands. The
+ * label is the real touch target and is what a visitor actually taps.
  */
-export async function sendAnswer(page: Page, answer: string): Promise<CaptainState> {
-  const composer = page.getByRole('textbox', { name: copy.composerPlaceholder });
-  const send = page.getByRole('button', { name: copy.send });
-
-  await expect(composer).toBeEnabled();
-  await composer.fill(answer);
-  await send.click();
-
-  // Anchor on the send actually landing: the composer clears itself in the same
-  // handler that dispatches, so this cannot race ahead of React. Without it the
-  // next call could type over a message still in flight.
-  await expect(composer).toHaveValue('', { timeout: 15_000 });
-
-  const settled = await waitForCaptain(page);
-  expect(settled, 'captain never finished replying').not.toBe('thinking');
-  return settled;
+export async function pickOption(
+  page: Page,
+  question: number,
+  optionIndex: number,
+): Promise<void> {
+  await page
+    .locator(`label:has(input[name="q${question}-option"])`)
+    .nth(optionIndex)
+    .click();
+  await expect(
+    page.locator(`input[name="q${question}-option"]`).nth(optionIndex),
+  ).toBeChecked();
 }
 
 /**
- * Plays the whole scripted voyage and returns once the result is on screen.
+ * Picks option `optionIndex` (0-3) on the current question and advances.
  *
- * `skipReveal` exercises the suspense gate's skip affordance rather than
- * waiting out the full timeline.
+ * On the last question this presses the submit button instead of Next, which
+ * is what the spec's final-step label calls for.
  */
-export async function playVoyage(page: Page, skipReveal = true): Promise<void> {
-  for (const answer of ANSWERS) {
-    const settled = await sendAnswer(page, answer);
-    if (settled === 'revealing' || settled === 'result') break;
-  }
+export async function answerQuestion(page: Page, optionIndex: number): Promise<void> {
+  const question = await currentQuestionIndex(page);
+  await pickOption(page, question + 1, optionIndex);
 
-  if (skipReveal) {
-    const skip = page.getByRole('button', { name: copy.revealSkip });
-    if (await skip.isVisible().catch(() => false)) {
-      await skip.click();
-    }
-  }
-
-  await expect(page.locator('[data-scene="result"]')).toBeVisible({ timeout: 20_000 });
+  const last = question === QUESTIONS.length - 1;
+  const button = last
+    ? page.getByRole('button', { name: copy.submit })
+    : page.getByRole('button', { name: copy.next });
+  await expect(button).toBeEnabled();
+  await button.click();
 }
 
-/** Fails the test if the document scrolls horizontally. */
+/** Reads the 0-based question index from the counter text. */
+export async function currentQuestionIndex(page: Page): Promise<number> {
+  const text = (await page.getByTestId('quiz-counter').innerText()).trim();
+  const match = /(\d+)/.exec(text.replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))));
+  if (!match?.[1]) throw new Error(`Could not read the question counter from "${text}"`);
+  return Number(match[1]) - 1;
+}
+
+/** Answers every question with the given option indices. */
+export async function playQuiz(
+  page: Page,
+  picks: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+): Promise<void> {
+  for (const pick of picks) await answerQuestion(page, pick);
+}
+
+/** Plays through and lands on the ranked matches screen. */
+export async function playToMatches(page: Page, picks?: number[]): Promise<void> {
+  await gotoQuiz(page);
+  await playQuiz(page, picks);
+  await expect(scene(page)).toHaveAttribute('data-scene', 'matches', { timeout: 15_000 });
+}
+
+/** The five ranked rows, best first. */
+export function matchRows(page: Page): Locator {
+  return page.locator('[data-track-id][data-rank]');
+}
+
+/** The track ids in the order the matches screen lists them. */
+export async function rankedTrackIds(page: Page): Promise<string[]> {
+  return matchRows(page).evaluateAll((rows) =>
+    rows.map((row) => row.getAttribute('data-track-id') ?? ''),
+  );
+}
+
+/** Asserts the page does not scroll sideways at the current viewport. */
 export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
   const overflow = await page.evaluate(() => {
     const doc = document.documentElement;
     return { scroll: doc.scrollWidth, client: doc.clientWidth };
   });
-  // Allow a 1px rounding tolerance.
+  // Allow one device pixel of sub-pixel rounding.
   expect(overflow.scroll).toBeLessThanOrEqual(overflow.client + 1);
 }
+
+/** True when an element is visible and at least 44px on its smaller axis. */
+export async function hasTouchTarget(page: Page, selector: string): Promise<boolean> {
+  const box = await page.locator(selector).first().boundingBox();
+  if (!box) return false;
+  return Math.min(box.width, box.height) >= 44;
+}
+
+export { TOTAL_POINTS };

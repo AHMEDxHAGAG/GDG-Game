@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 
 import { hasArtwork } from '@/generated/artwork-manifest';
 import type { CharacterDefinition } from '@/features/characters/types';
@@ -10,8 +9,6 @@ import { PiratePlaceholder } from './PiratePlaceholder';
 export interface CharacterArtworkProps {
   character: CharacterDefinition;
   className?: string;
-  /** Width/height of the rendered box; artwork keeps its aspect ratio. */
-  size?: number;
   priority?: boolean;
 }
 
@@ -23,11 +20,17 @@ export interface CharacterArtworkProps {
  * build-time manifest picks it up automatically. The `onError` path stays as a
  * second line of defence for a wrong path or a stale build, so the UI never
  * shows a broken image during a live event.
+ *
+ * Deliberately a plain `<img>` rather than `next/image`: `html-to-image`
+ * re-fetches every image URL while composing the exported card, and the
+ * `/_next/image` optimisation endpoint has been a recurring source of export
+ * flakiness. A same-origin file under `public/` is the most reliable thing to
+ * hand a canvas rasteriser. The intrinsic `width`/`height` are always set, so
+ * the browser still reserves the right box and there is no layout shift.
  */
 export function CharacterArtwork({
   character,
   className,
-  size,
   priority = false,
 }: CharacterArtworkProps): React.JSX.Element {
   const [failed, setFailed] = useState(false);
@@ -35,7 +38,7 @@ export function CharacterArtwork({
   // Skip the request entirely when no file exists: a guaranteed 404 would cost
   // a round trip and flash a broken image before the fallback rendered.
   const canRenderArtwork = hasArtwork(character.id);
-  const showArtwork = Boolean(artwork.src) && canRenderArtwork && !failed;
+  const showArtwork = canRenderArtwork && !failed;
 
   if (!showArtwork) {
     return (
@@ -51,15 +54,17 @@ export function CharacterArtwork({
 
   return (
     <span className={className} data-artwork="final">
-      <Image
-        src={artwork.src as string}
+      {/* eslint-disable-next-line @next/next/no-img-element -- see the note on html-to-image above */}
+      <img
+        src={artwork.src}
         alt={artwork.alt}
-        width={size ?? artwork.width}
-        height={size ?? artwork.height}
-        priority={priority}
+        width={artwork.width}
+        height={artwork.height}
+        decoding={priority ? 'sync' : 'async'}
+        loading={priority ? 'eager' : 'lazy'}
         onError={() => setFailed(true)}
         className="h-full w-full object-contain"
-        style={{ imageRendering: 'auto' }}
+        draggable={false}
       />
     </span>
   );

@@ -1,3 +1,21 @@
+> **SUPERSEDED — do not follow.**
+>
+> This document specified a chat-driven experience: free-text answers, a scripted
+> captain, no multiple choice, and explicitly *no* scoring
+> (`There are no multiple-choice personality questions.`,
+> `No real AI provider or scoring system is implemented.`).
+>
+> All four of those are now false by design. The chat engine, composer, message
+> list, dialogue script and the `origin: 'engine' | 'demo'` honesty boundary were
+> deleted, and replaced by a ten-question MCQ quiz with local weighted scoring,
+> a ranked matches screen where the visitor picks their own track, and a
+> downloadable username card.
+>
+> See `docs/OVERHAUL_IMPLEMENTATION_PLAN.md` for the build plan and
+> `docs/AGENT_CONTEXT.md` for the current architecture.
+
+---
+
 # MASTER IMPLEMENTATION PROMPT
 
 ## GDGoC AASTMT Aswan — The Pirate Identity Expedition

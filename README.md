@@ -1,29 +1,34 @@
-# GDGoC — The Pirate Identity Expedition
+# GDGoC — اكتشف شخصيتك
 
-A mobile-first, chat-driven pirate personality adventure for the
+A mobile-first, Arabic RTL personality quiz for the
 **Google Developer Groups on Campus (GDGoC) AASTMT Aswan** orientation event.
 
-Visitors meet a pirate captain, answer ~7 open-ended scenarios in Egyptian
-Arabic (with natural English track terms), then receive an animated pirate
-identity reveal tied to one of five technical tracks. The real AI conversation
-is **deliberately out of scope**: the app ships with a scripted
-`MockConversationEngine` behind a provider-neutral `ConversationEngine`
-interface, so a future server-backed engine replaces the adapter — not the
-frontend.
+Visitors answer **ten single-select questions**, and each answer adds weighted
+points to two of the five GDGoC tracks. The answers produce a ranked list —
+first, second, third and so on — and the visitor **picks the match they like**,
+not necessarily the top one. They then get a downloadable card showing **their
+username and the chosen track**.
 
-- Live concept: cinematic welcome → free-text chat → suspense → character
-  reveal → shareable result card → optional gallery.
+Scoring is a pure, synchronous function that runs entirely in the browser.
+There is no AI, no server, no API key, and nothing leaves the device.
+
+```
+Landing → Quiz Q1..Q10 → Analyzing → Ranked matches → Pick one → Card → Download PNG
+```
+
+- Design source of truth: `assests/UI/` (spec bundle + reference screenshots)
+  and `assests/Characters/` (the five production pirate PNGs).
 - Projector screen at `/present` with a configurable QR code.
-- Session resume, retryable errors, dev-only five-result preview, RTL-safe
-  Arabic/English copy, and client-side PNG export.
+- Session resume, RTL-safe Arabic/English copy, reduced-motion support, and a
+  client-side 1080×1350 PNG export.
 
 ## Quick start
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm run test       # vitest (28 tests)
-npm run test:e2e   # playwright (66 tests, builds + serves the app itself)
+npm run test       # vitest (81 tests)
+npm run test:e2e   # playwright (106 tests, builds + serves the app itself)
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint (flat config)
 npm run build      # production build
@@ -33,126 +38,98 @@ npm start          # serve the production build
 Requirements: Node.js `>=20.9.0`. Browser tests need Chromium once:
 `npx playwright install chromium`.
 
-Copy lives in `src/content/ui.ts`; after editing it run
+Interface copy lives in `src/content/ui.ts`, the question bank in
+`src/content/questions.ts` and the persona result copy in
+`src/content/tracks.ts`. After editing any of them run
 `python3 tools/check-copy.py`, which rejects stray non-Latin characters that
-would otherwise render as tofu.
+would otherwise render as tofu in the Arabic UI.
 
 ## Environment variables
 
 | Variable | Purpose | Default |
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | Absolute URL encoded in the `/present` QR code | Current origin at runtime, so `npm run dev` works with no config |
-| `NEXT_PUBLIC_ENABLE_DEV_TOOLS` | Force the dev-only result preview switcher in production | Off in production; on in development |
 
-No API keys are required — the mock engine runs fully offline.
+No API keys are required — scoring runs fully offline.
+
+## How the scoring works
+
+```
+Each option carries { primary: 3, secondary: 1 }
+10 answers × 4 points = 40 points spread across the five tracks
+```
+
+Ranking is deterministic: score → primary hits → secondary hits → fixed track
+order. Over the whole bank each track is the primary of exactly **8** options and
+the secondary of exactly **8**, so the question set cannot favour any track —
+only the visitor's answers can.
+
+See `docs/AGENT_CONTEXT.md` for the full fairness analysis and the measured
+distribution.
+
+## Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Landing — hero, five personas, optional username, start |
+| `/quiz` | The ten MCQs |
+| `/analyzing` | Scoring beat |
+| `/matches` | Ranked 1st–5th; the visitor chooses |
+| `/result/[trackId]` | Card for the chosen track |
+| `/tracks` | Five-persona gallery |
+| `/present` | Projector screen with QR |
+
+`/analyzing` is not the spec's `/loading`: `app/loading.tsx` is a reserved
+Next.js App Router filename.
 
 ## Repository structure
 
 ```text
 src/
-  app/               # page.tsx (expedition), present/page.tsx (projector)
-  components/        # shared / chat / characters primitives
+  app/                 # page, quiz, analyzing, matches, result/[trackId],
+                       # tracks, present
+  components/
+    characters/        # CharacterArtwork, CharacterPortrait, TrackEmblem
+    shared/            # NauticalBackground, ParchmentPanel, PirateButton, art
+  content/
+    questions.ts       # the ten questions and their weights
+    tracks.ts          # per-persona result copy
+    ui.ts              # all other interface copy
   features/
-    expedition/      # WelcomeScene, BoardingScene, ConversationScene,
-                     # ExpeditionShell, expeditionReducer, ExpeditionProvider
-    conversation/    # engine/ factory + MockConversationEngine, types, schemas
-    characters/      # CharacterGallery (five-pirate overview + preview)
-    reveal/          # RevealingScene, ResultScene, ResultCard, ResultActions
-    session/         # versioned localStorage persistence + TTL
-    present/         # PresentationScreen (QR + five pirates)
-  config/            # site.ts (brand/QR/limits), characters.ts (5 pirates)
-  content/           # ui.ts (all copy), dialogue/mockScript.ts (7 beats)
-  lib/ids.ts         # collision-resistant ids with non-HTTPS fallback
-public/assets/characters/   # production artwork slots (placeholder until then)
-e2e/                        # playwright specs (helpers.ts drives a full voyage)
-src/generated/              # artwork-manifest.ts, written at build time
-docs/AI_INTEGRATION.md      # future engine contract (architectural, no AI)
-docs/AGENT_CONTEXT.md       # handoff: what is verified, what is missing
-tools/check-copy.py         # stray-CJK / replacement-char guard for copy
-tools/generate-artwork-manifest.mjs  # scans public/assets/characters at build
-assests/                    # supplied reference (note the legacy spelling)
+    quiz/              # types, scoring, reducer, provider, storage, screens
+    matches/           # ranked matches screen
+    tracks/            # gallery screen
+    reveal/            # ResultScene, ResultCard (PNG export), ResultActions
+  config/              # characters (the five personas), site
+  generated/           # artwork-manifest.ts — AUTO-GENERATED, do not edit
+  lib/                 # ids, typed route builders
+assests/               # supplied design source — do not modify
+public/assets/characters/  # the five PNGs, named by TrackId
+docs/                  # AGENT_CONTEXT, OVERHAUL_IMPLEMENTATION_PLAN
+tools/                 # artwork manifest generator, copy checker
+e2e/                   # Playwright specs
 ```
 
-## Character configuration
+## Character artwork
 
-`src/config/characters.ts` is the single source of truth for the five pirates:
+The five cutouts live in `public/assets/characters/`, named by `TrackId`. Adding
+or renaming a file is enough — `tools/generate-artwork-manifest.mjs` regenerates
+`src/generated/artwork-manifest.ts` on `predev`, `prebuild` and `pretest`, and the
+UI falls back to a designed placeholder for any track with no file on disk.
 
-| Track | Pirate | Colour | Emblem |
-|---|---|---|---|
-| Software Engineering | The Shipwright | `#d33a2c` | gear |
-| Artificial Intelligence | The Oracle | `#2e86de` | robot |
-| Web Development | The Navigator | `#e88b22` | globe |
-| Data Science | The Cartographer | `#8e44c4` | chart |
-| Cybersecurity | The Guardian | `#22a850` | shield |
+All five are 1024×1536 transparent PNGs (2:3 portrait, not 1:1). They render as
+plain `<img>` with explicit dimensions rather than `next/image`, because the PNG
+export re-fetches every image URL.
 
-Each entry holds the English title, Arabic epithet, track name, personality
-line, palette (vivid/deep/wash), emblem, motifs, artwork slot and discovery
-note. Change copy or colours there — no JSX edits needed.
+## Accessibility
 
-## How the mock dialogue works
+Native radio groups with `fieldset`/`legend`, a `role="progressbar"` with real
+values on the quiz and deliberately **no** `aria-valuenow` on the indeterminate
+analyzing bar, `aria-live` announcements for question changes and the full
+ranking, focus moved to the question heading on navigation, 44px minimum touch
+targets, and full `prefers-reduced-motion` support.
 
-`src/content/dialogue/mockScript.ts` holds the scripted voyage (intro + 7
-scenario beats + closing). `MockConversationEngine` plays beats in order,
-records genuine free-text answers, replies with **content-free**
-acknowledgements (never claims understanding), advances an opaque `cursor` in
-`engineState` (resume-safe), and closes with `phase: 'completed'`. Then
-`getResult()` returns a fixed, clearly-labelled `origin: 'demo'` track
-(`cybersecurity` by default). It never keyword-matches, scores, or classifies.
+## Docs
 
-
-## Session persistence
-
-`sessionStorage.ts` persists nickname, messages, phase, engine cursor, result
-and timestamps to `localStorage` (`gdgoc-pirate-expedition:session`, schema
-`v1`, 12-hour TTL). On reload the app hydrates to `welcome` and offers
-**continue vs restart**; in-flight `awaiting`/`boarding` downgrades to
-`conversation`, and unknown/expired payloads are discarded — never migrated.
-A subtle footer reset clears the device session.
-
-## Previewing all five results
-
-Development builds show a floating **DevTools** switcher (bottom-left) that
-previews any track instantly via `result/preview`. The result-screen gallery
-also previews on select. Force it in production with
-`NEXT_PUBLIC_ENABLE_DEV_TOOLS=true` for on-stage rehearsals only.
-
-## Configuring the event QR code
-
-Set the deployed URL before building:
-
-```bash
-NEXT_PUBLIC_SITE_URL=https://your-event-url.vercel.app npm run build
-```
-
-Without it, `/present` encodes the current origin at runtime — correct for
-local rehearsal, but set the variable for the real event. The QR is generated
-client-side (`qrcode` package); no external service is called.
-
-## Adding / replacing character artwork
-
-1. Export **isolated transparent** PNG/WebP files (1:1, ≥1536px source).
-2. Drop them into `public/assets/characters/` as:
-   `software-engineering.png`, `ai.png`, `web-development.png`,
-   `data-science.png`, `cybersecurity.png`.
-3. Done — `CharacterArtwork` prefers `character.artwork.src` and falls back to
-   the designed ink placeholder (plus an `onError` fallback) if a file is
-   missing. Update dimensions in `characters.ts` if your exports differ.
-
-The composite `assests/characters.jpg` reference cannot be cleanly sliced into
-transparent sprites, so it is **not** used in the UI. See
-`public/assets/characters/README.md`.
-
-## How result images are exported
-
-`ResultCard` renders a fixed 4:5 card (1080x1350 @2x) with real text and
-bidi-safe directions. `html-to-image` captures it after `document.fonts.ready`
-so Arabic shaping survives; Web Share API with files is tried first, then PNG
-download, then an explanatory error. Chat transcripts are never included.
-
-## What remains for future AI integration
-
-- Server-backed `ConversationEngine` (see `docs/AI_INTEGRATION.md`).
-- Real personality inference, adaptive follow-ups, explanations.
-- Production character PNGs (placeholders ship today).
-- Optional E2E (Playwright installed, no specs yet) and event-day rehearsal.
-  Unit coverage: reducer, mock engine, storage, provider flow, catalogue.
+- `docs/AGENT_CONTEXT.md` — current architecture, invariants, and the traps
+- `docs/OVERHAUL_IMPLEMENTATION_PLAN.md` — the overhaul plan this build followed

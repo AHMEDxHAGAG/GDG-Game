@@ -1,20 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, type Ref } from 'react';
 import { toPng } from 'html-to-image';
 
 import { ui } from '@/content/ui';
-import { site } from '@/config/site';
+import { TRACK_CONTENT } from '@/content/tracks';
+import { getCharacter } from '@/config/characters';
 import type { CharacterDefinition } from '@/features/characters/types';
-import { CharacterPortrait } from '@/components/characters/CharacterPortrait';
+import type { RankedMatch } from '@/features/quiz/scoring/scoreAnswers';
 import { TrackEmblem } from '@/components/characters/TrackEmblem';
-import { ExpeditionBrand } from '@/components/shared/NauticalBackground';
-import {
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-  type Ref,
-} from 'react';
 
 export interface ResultCardHandle {
   exportPng: () => Promise<Blob | null>;
@@ -22,38 +16,87 @@ export interface ResultCardHandle {
 
 export interface ResultCardProps {
   character: CharacterDefinition;
-  nickname: string | null;
-  origin: 'engine' | 'demo';
+  /** Printed on the card. Null when the visitor skipped it. */
+  username: string | null;
+  /** The visitor's chosen match, when one is known. */
+  match: RankedMatch | null;
 }
 
 /**
- * Shareable pirate identity card (screenshot / story / PNG friendly).
+ * Export geometry from the spec's `share_card.suggested_export_size_px`.
  *
- * Fixed 3:4-ish layout (1080x1350 export), real text (no baked assets),
- * bidi-safe: Arabic copy uses dir="rtl", English titles keep dir="ltr".
- * Export waits for fonts so Arabic shaping survives html-to-image.
+ * `canvasWidth`/`canvasHeight` size the bitmap and `pixelRatio` multiplies it
+ * again, so the ratio must stay at 1 to land on exactly 1080×1350. The SVG
+ * source is emitted at the card's natural layout size and scaled up
+ * vectorially, which keeps text and line art crisp at 3× without a 3240px
+ * canvas.
+ */
+const EXPORT_WIDTH_PX = 1080;
+const EXPORT_HEIGHT_PX = 1350;
+const EXPORT_PIXEL_RATIO = 1;
+
+/**
+ * Shareable pirate identity card.
+ *
+ * Fixed 4:5 poster, real text, no baked assets. The composition follows
+ * `assests/UI/ResultCardExample1.png`: brand line and username, the persona as
+ * a large figure, then the track-coloured sections — tagline ribbon, unique
+ * strength, four traits, and the secondary-track card.
+ *
+ * Every internal size is tuned so the whole composition fits inside the fixed
+ * aspect box at its narrowest width. `overflow-hidden` on the frame means a
+ * mis-sized child is *clipped and lost* rather than merely scrolled, so the
+ * fitness of this layout is asserted in `result-card.spec.ts` rather than left
+ * to a visual eyeball.
+ *
+ * Export waits on `document.fonts.ready` so Arabic shaping is never rasterised
+ * against a fallback face, and waits on image decode so a slow PNG cannot
+ * produce a half-empty poster.
  */
 function ResultCardInner(
-  { character, nickname, origin }: ResultCardProps,
+  { character, username, match }: ResultCardProps,
   ref: Ref<ResultCardHandle>,
 ): React.JSX.Element {
   const cardRef = useRef<HTMLDivElement>(null);
+  const copy = TRACK_CONTENT[character.id];
+  const secondaryCharacter = getCharacter(copy.secondaryTrackId);
+  const accent = character.palette.vivid;
 
   useImperativeHandle(ref, () => ({
     exportPng: async () => {
       const node = cardRef.current;
       if (!node) return null;
+
+      // Fonts first: an unfired Cairo/Tajawal swap would bake fallback glyphs.
       try {
         await document.fonts.ready;
       } catch {
         /* fonts are best-effort; export anyway */
       }
-      // Export at the card's own size — the node is responsive (max 420px
-      // wide) and html-to-image captures it 1:1, so sizing here only sets the
-      // output scale, never the layout.
+
+      // Then images: html-to-image inlines them, and one still decoding yields
+      // a transparent hole instead of the character.
+      try {
+        await Promise.all(
+          Array.from(node.querySelectorAll('img'))
+            .filter((img) => !img.complete)
+            .map(
+              (img) =>
+                new Promise<void>((resolve) => {
+                  img.addEventListener('load', () => resolve(), { once: true });
+                  img.addEventListener('error', () => resolve(), { once: true });
+                }),
+            ),
+        );
+      } catch {
+        /* best-effort */
+      }
+
       const dataUrl = await toPng(node, {
         cacheBust: true,
-        pixelRatio: 2,
+        pixelRatio: EXPORT_PIXEL_RATIO,
+        canvasWidth: EXPORT_WIDTH_PX,
+        canvasHeight: EXPORT_HEIGHT_PX,
         style: { transform: 'none', margin: '0' },
       });
       const response = await fetch(dataUrl);
@@ -75,77 +118,148 @@ function ResultCardInner(
         ref={cardRef}
         dir="rtl"
         role="img"
-        aria-label={`${character.titleAr} — ${character.trackName}`}
-        className="@container relative mx-auto aspect-[4/5] w-full max-w-[420px] overflow-hidden rounded-lg border-4 bg-parchment-100"
-        style={{ borderColor: character.palette.deep }}
+        aria-label={
+          `${username ? `${ui.card.usernamePrefix} ${username}. ` : ''}${character.titleAr} — ${character.trackName}`
+        }
+        className="pixel-frame relative mx-auto aspect-[1080/1350] w-full max-w-[26rem] overflow-hidden"
+        style={{ backgroundColor: character.palette.deep }}
+        data-testid="result-card"
       >
-        <div className="surface-parchment absolute inset-0" aria-hidden="true" />
+        {/* Scene behind the text. The gradient stops are kept opaque enough
+            that the persona title still clears 4.5:1 on top of them. */}
         <div
-          className="absolute inset-x-0 top-0 h-24 opacity-80"
           aria-hidden="true"
+          className="absolute inset-0"
           style={{
-            background: `linear-gradient(180deg, ${character.palette.wash}, transparent)`,
+            backgroundImage: `radial-gradient(ellipse 90% 55% at 50% 16%, ${accent}66 0%, transparent 70%),
+              linear-gradient(180deg, ${character.palette.deep} 0%, #0B0E20 100%)`,
           }}
         />
-        <div className="relative flex h-full flex-col items-center px-5 pt-5 pb-4 text-center @min-[23rem]:px-8 @min-[23rem]:pt-8 @min-[23rem]:pb-6">
-          <ExpeditionBrand compact tone="dark" />
-          <p
-            dir="ltr"
-            className="mt-2 text-[0.6rem] font-bold tracking-[0.3em] text-ink-faint uppercase @min-[23rem]:mt-3 @min-[23rem]:text-xs"
-          >
-            {ui.reveal.resultHeading}
-          </p>
-          {/* Portrait box is sized in container units rather than percentages:
-              a viewBox SVG resolves `height:100%` against an indefinite
-              parent as auto, which made it grow to width × 1.3 and paint over
-              the text below. A definite box lets preserveAspectRatio
-              letterbox it instead, at every card width. */}
-          <div className="mt-2 flex w-full justify-center">
-            <CharacterPortrait
-              character={character}
-              className="h-[36cqw] w-[30cqw] max-w-[11rem]"
+
+        <div className="relative flex h-full flex-col px-3.5 pt-3 pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <span dir="ltr" className="flex flex-col leading-none">
+              <span className="font-brand text-[0.8rem] font-bold tracking-tight text-text-primary">
+                {ui.brand.organization}
+              </span>
+              <span className="font-brand text-[0.5rem] font-medium tracking-[0.18em] text-text-secondary">
+                {ui.brand.campus}
+              </span>
+            </span>
+
+            {username ? (
+              <span
+                dir="auto"
+                data-testid="result-card-username"
+                className="max-w-[58%] truncate rounded-full border px-2.5 py-0.5 text-[0.75rem] font-bold"
+                style={{ borderColor: accent, backgroundColor: `${accent}33`, color: accent }}
+              >
+                {ui.card.usernamePrefix} {username}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="mt-1 flex h-[16%] items-end justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element -- html-to-image re-fetches every image URL while composing the export; the optimisation endpoint is not a reliable canvas source. See the note on exportPng. */}
+            <img
+              src={character.artwork.src}
+              alt=""
+              width={character.artwork.width}
+              height={character.artwork.height}
+              className="h-full w-auto object-contain object-bottom"
+              draggable={false}
             />
           </div>
-          <p
-            dir="ltr"
-            className="mt-3 font-display text-3xl leading-none text-ink @min-[23rem]:text-5xl"
+
+          <p className="mt-0.5 text-[0.66rem] font-bold text-text-secondary">{copy.eyebrow}</p>
+          <h2
+            className="font-display font-black leading-[1.1]"
+            style={{ color: accent, fontSize: 'clamp(1.5rem, 7.5vw, 2.25rem)' }}
           >
-            {character.title}
+            {copy.personaTitleAr}
+          </h2>
+          <p className="text-[0.8rem] font-bold text-text-primary">
+            {copy.trackSubtitleAr}
           </p>
-          <p
-            className="mt-1 text-lg font-extrabold @min-[23rem]:text-2xl"
-            style={{ color: character.palette.deep }}
-          >
-            {character.titleAr}
-          </p>
-          <p
-            dir="ltr"
-            className="text-sm font-extrabold tracking-wide text-ink @min-[23rem]:text-lg"
-          >
+          {/* Track name and rank share a line: at a fixed 4:5 frame every row
+              counts, and a separate rank row pushed the traits off the card. */}
+          <p dir="ltr" className="text-[0.65rem] font-bold tracking-wide text-text-secondary">
             {character.trackName}
+            {match ? (
+              <span className="tracking-normal opacity-80">
+                {' · '}
+                #{match.rank} · {ui.matches.scoreLabel(match.score)}
+              </span>
+            ) : null}
           </p>
-          <p className="mt-2 max-w-[46ch] text-[0.78rem] leading-snug font-semibold text-ink-soft @min-[23rem]:text-[0.85rem]">
-            {character.personalityAr}
+
+          <p
+            className="mt-1 rounded-md px-2.5 py-1.5 text-center text-[0.78rem] leading-snug font-bold text-text-primary"
+            style={{ backgroundColor: `${accent}33` }}
+          >
+            {copy.taglineAr}
           </p>
-          {nickname ? (
-            <p className="mt-1.5 text-xs font-bold text-ink-soft @min-[23rem]:mt-2 @min-[23rem]:text-sm">
-              {ui.chat.you} · <span dir="auto">{nickname}</span>
-            </p>
-          ) : null}
-          <div className="mt-auto w-full border-t-2 pt-2 text-center text-[0.6rem] leading-tight font-bold text-ink-faint @min-[23rem]:pt-3 @min-[23rem]:text-[0.68rem]">
-            {/* Short tag rather than the full banner: the sentence wraps to
-                four lines at card width. The full explanation stays on the
-                result screen behind the card. */}
-            {origin === 'demo' ? <p className="mb-1 text-ink-soft">{ui.reveal.demoTag}</p> : null}
-            <span className="inline-flex items-center justify-center gap-1.5">
+
+          <section className="mt-1 rounded-md border-2 px-2.5 py-1.5" style={{ borderColor: accent }}>
+            <h3
+              className="flex items-center gap-1.5 text-[0.75rem] font-extrabold"
+              style={{ color: accent }}
+            >
+              <TrackEmblem emblem={character.emblem} color={accent} className="size-3.5 shrink-0" />
+              {copy.strengthTitleAr}
+            </h3>
+            <p className="mt-0.5 text-[0.75rem] leading-snug text-text-primary">{copy.strengthAr}</p>
+          </section>
+
+          <section className="mt-1">
+            <h3 className="text-[0.75rem] font-extrabold" style={{ color: accent }}>
+              {copy.traitsTitleAr}
+            </h3>
+            <ul className="mt-0.5 grid grid-cols-2 gap-x-2 gap-y-0">
+              {copy.traits.map((trait) => (
+                <li key={trait} className="flex items-start gap-1">
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 size-1 shrink-0 rotate-45"
+                    style={{ backgroundColor: accent }}
+                  />
+                  <span className="text-[0.62rem] leading-[1.3] text-text-primary">{trait}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section
+            className="mt-auto rounded-md border px-2.5 py-1.5"
+            style={{ borderColor: `${accent}80` }}
+          >
+            <h3 className="text-[0.6rem] font-bold text-text-secondary">
+              {copy.secondaryEyebrowAr}
+            </h3>
+            <p
+              className="mt-0.5 flex items-center gap-1.5 text-[0.82rem] font-extrabold"
+              style={{ color: secondaryCharacter.palette.vivid }}
+            >
               <TrackEmblem
-                emblem={character.emblem}
-                color={character.palette.deep}
-                className="size-4 shrink-0 @min-[23rem]:size-5"
+                emblem={secondaryCharacter.emblem}
+                color={secondaryCharacter.palette.vivid}
+                className="size-3.5 shrink-0"
               />
-              <span dir="ltr">{`${site.organization} · ${site.campus}`}</span>
-            </span>
-          </div>
+              {secondaryCharacter.trackNameAr}
+            </p>
+            {/* Clamped so the longest authored description cannot push the
+                wordmark out of the fixed 4:5 frame. */}
+            <p className="mt-0.5 line-clamp-2 text-[0.64rem] leading-[1.4] text-text-secondary">
+              {copy.secondaryDescriptionAr}
+            </p>
+          </section>
+
+          <p
+            dir="ltr"
+            className="mt-1 text-center font-brand text-[0.5rem] tracking-[0.2em] text-text-secondary/70"
+          >
+            {ui.card.exportWordmark}
+          </p>
         </div>
       </div>
     </div>
@@ -154,3 +268,21 @@ function ResultCardInner(
 
 export const ResultCard = forwardRef(ResultCardInner);
 ResultCard.displayName = 'ResultCard';
+
+/**
+ * Filename for the downloaded PNG: `gdgoc-<username>-<track>.png`.
+ *
+ * Arabic letters are kept — they are valid in a filename and the card is
+ * Arabic — but separators and filesystem-hostile punctuation are not.
+ */
+export function resultFileName(username: string | null, character: CharacterDefinition): string {
+  const slug = username
+    ? username
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[/\\?%*:|"<>]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+    : '';
+  return `gdgoc${slug ? `-${slug}` : ''}-${character.id}.png`;
+}

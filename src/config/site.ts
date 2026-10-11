@@ -21,18 +21,13 @@ export const site = {
   organizationLong: 'Google Developer Groups on Campus',
   campus: 'AASTMT Aswan',
   campusLong: 'Arab Academy for Science, Technology & Maritime Transport — Aswan',
-  title: 'The Pirate Identity Expedition',
-  titleAr: 'رحلة كشف القرصان',
-  taglineAr: 'اكتشف القرصان اللي جواك',
-  taglineEn: 'Discover Your Pirate Identity',
-  themeColor: '#e8d3a3',
-  /** Set to true to expose the developer-only result preview switcher. */
-  showDevTools: env.NODE_ENV !== 'production' || env.NEXT_PUBLIC_ENABLE_DEV_TOOLS === 'true',
-  /**
-   * External community links. Intentionally disabled by default — the
-   * expedition site owns those destinations and this app must not depend on
-   * them. Flip a value to a real URL to enable the button.
-   */
+  title: 'Discover Your Personality',
+  titleAr: 'اكتشف شخصيتك',
+  taglineAr: 'أي مسار في GDGoC يناسبك؟',
+  taglineEn: 'Discover Your Personality',
+  themeColor: '#090F22',
+  /** Question count, mirrored from `content/questions.ts` for landing copy. */
+  questionCount: 10,
   communityLinks: {
     discord: null as string | null,
     whatsapp: null as string | null,
@@ -41,9 +36,19 @@ export const site = {
 } as const;
 
 export const storageKeys = {
-  session: 'gdgoc-pirate-expedition:session',
-  nickname: 'gdgoc-pirate-expedition:nickname',
+  /** Current quiz session. Bumped to `quiz:*` when the chat system was removed. */
+  session: 'gdgoc-pirate-quiz:session',
+  /**
+   * The retired chat session key. Cleared once on boot so a stale chat payload
+   * can never be read back by the quiz.
+   */
+  legacySession: 'gdgoc-pirate-expedition:session',
+  /** Remembered username, so returning visitors keep their card identity. */
+  username: 'gdgoc-pirate-quiz:username',
 } as const;
 
-export const MAX_MESSAGE_LENGTH = 600;
-export const MAX_NICKNAME_LENGTH = 24;
+/**
+ * Username limit. The value is printed on the exported card, which is capped at
+ * 1080×1350, so the practical ceiling is line length rather than the counter.
+ */
+export const MAX_USERNAME_LENGTH = 24;

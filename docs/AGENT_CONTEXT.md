@@ -1,218 +1,228 @@
-# AGENT CONTEXT — GDGoC Pirate Identity Expedition (handoff)
+# AGENT_CONTEXT — handoff
 
-> Paste this whole file into a new agent session as its starting context.
-> It states what exists, what is verified, what is missing, and what to do
-> next, mapped against the original **MASTER_IMPLEMENTATION_PROMPT** the
-> project is built from (referred to below as "the Plan", with its section
-> numbers and §25 acceptance checklist).
+**What this is:** a mobile-first, Arabic RTL personality quiz for GDGoC AASTMT Aswan.
+Ten single-select questions are scored locally into a weighted ranking of the five
+GDGoC tracks. The visitor sees first…fifth, picks the match they like, and gets a
+downloadable card showing **their username and that track**.
 
-## 0. Ground truth (re-verify before trusting)
+**It is not** a chat app. The conversation engine, its composer, its message list
+and its scripted dialogue were all deleted — see §5.
 
-Repo: `/home/ahmed/Projects/GDG-Game` (Next.js App Router, TypeScript strict,
-Tailwind v4, React 19, ESLint flat config, Vitest, Playwright). Node `>=20.9.0`
-(dev runs on v22.23.1). No API keys needed — the mock engine runs offline.
+| Check | Command | Status |
+| --- | --- | --- |
+| Types | `npm run typecheck` | clean |
+| Lint | `npm run lint` | 0 errors, 0 warnings |
+| Unit | `npm test` | 5 files, **81 tests** pass |
+| Build | `npm run build` | clean, 8 routes |
+| Copy | `python3 tools/check-copy.py` | clean (no CJK leakage in Arabic copy) |
+| E2E | `npm run test:e2e` | **106 tests** pass (53 × mobile Pixel 7 + desktop 1440×900) |
 
-Last verified state — **all gates green**:
+---
 
-| Check | Command | Result |
-|---|---|---|
-| Types | `npm run typecheck` | pass, 0 errors |
-| Lint | `npm run lint` | pass, **0 errors and 0 warnings** |
-| Unit tests | `npm run test` | 5 files, **28 tests** pass |
-| Build | `npm run build` | pass; routes `/`, `/_not-found`, `/present` |
-| Copy | `python3 tools/check-copy.py` | pass |
-| E2E | `npm run test:e2e` | **66 tests** pass (33 × mobile 360×800 + desktop 1440×900) |
+## 1. Routes
 
-`npm run test:e2e` builds and serves the app itself (see `playwright.config.ts`),
-so run it after any production-affecting change. Playwright Chromium is installed.
+| Route | File | Purpose |
+| --- | --- | --- |
+| `/` | `src/app/page.tsx` | Landing — hero, five personas, username field, CTA |
+| `/quiz` | `src/app/quiz/page.tsx` | The ten MCQs |
+| `/analyzing` | `src/app/analyzing/page.tsx` | Scoring beat |
+| `/matches` | `src/app/matches/page.tsx` | Ranked 1st–5th, visitor picks one |
+| `/result/[trackId]` | `src/app/result/[trackId]/page.tsx` | Card for the chosen track |
+| `/tracks` | `src/app/tracks/page.tsx` | Five-persona gallery |
+| `/present` | `src/app/present/page.tsx` | Projector screen with QR |
 
-## 1. What has been done (matches the Plan)
+`/analyzing` is **not** the spec's `/loading`: `app/loading.tsx` is a reserved
+Next.js App Router filename for a Suspense boundary, so `app/loading/` cannot
+coexist with it.
 
-### Milestones from §24
+---
 
-- **M1 Discovery** — existing stack reused (Next 16, Tailwind 4, Lucide, Zod,
-  Vitest, Playwright). Supplied reference: `assests/characters.jpg` (composite
-  1280x960 JPEG) + `assests/sharedVisual.json` (visual direction).
-  *Note: GSAP was in the supplied stack but is now intentionally removed — see
-  §2.4 for the decision and how to reinstate it.*
-- **M2 Foundation** — design tokens in `src/app/globals.css` (parchment/ink/
-  ocean/track accents, motion keyframes, reduced-motion),
-  `src/config/site.ts` (brand, QR URL env, limits), `src/config/characters.ts`
-  (5-pirate single source of truth), shared primitives: `PirateButton`,
-  `ParchmentPanel`, `NauticalBackground` (+`ExpeditionBrand`), `nautical-art`
-  SVGs, `TrackEmblem`, `PiratePlaceholder`, `CharacterArtwork` (real-art-or-
-  placeholder), `CharacterPortrait`, `CharacterBadge`.
-- **M3 Experience structure** — `WelcomeScene` (Arabic copy, optional/skippable
-  nickname, resume offer), `BoardingScene` (skippable transition),
-  `ConversationScene` (captain header + JourneyProgress + ChatMessageList with
-  auto-scroll/ARIA live region + ChatComposer with Enter/Shift+Enter, length
-  caps, keyboard-safe `100dvh` layout), `ExpeditionShell` phase router.
-- **M4 Engine abstraction** — `ConversationEngine` interface +
-  `MockConversationEngine` (scripted intro + 7 scenarios + closing, content-
-  free acknowledgements, opaque cursor for resume, `failNextCalls` test seam,
-  `origin: 'demo'` result), `createConversationEngine()` factory as the single
-  AI-integration seam, full reducer state machine
-  (`welcome → boarding → conversation ⇄ awaiting → revealing → result` +
-  `error` with retry), `ExpeditionProvider` orchestration (serialization
-  guard, idempotent sends, optimistic context sync, chained `getResult` on
-  completion), Zod-validated `localStorage` persistence (schema v1, 12h TTL,
-  safe downgrade, footer reset).
-- **M5 Character results** — `RevealingScene` (suspense, skippable, with a
-  1200 ms hold *after* the payload lands so it cannot flash),
-  `ResultScene` (silhouette → portrait entrance, demo banner, explanation
-  slot with sample label, secondary affinity only when supplied),
-  `ResultCard` (fixed 4:5 export via `html-to-image`, waits for fonts,
-  bidi-safe, container-query type scale), `ResultActions` (Web Share API → PNG
-  download fallback → explanatory error), `CharacterGallery` (five pirates),
-  dev-only `DevTools` preview switcher for all five tracks.
-- **M6 Event presentation** — `/present`: title, client-side QR (`qrcode`;
-  destination = `NEXT_PUBLIC_SITE_URL` or runtime origin), 3-step
-  instructions, five pirate portraits, 16:9-ish composition. No
-  leaderboards/tracking (per §26).
-- **M7 Polish** — entrance animations + reduced-motion, `dir="auto"`/bidi
-  isolation, safe-area insets, ARIA (role=log, aria-live, progressbar,
-  dialog), error states (retry + give-up), `global-error.tsx`,
-  `not-found.tsx`.
-- **M8 Verification** — 28 unit tests (reducer incl. hydration, mock engine
-  incl. progress regression, storage, provider orchestration, character
-  catalogue) **+ a 66-test Playwright suite** in `e2e/` covering welcome,
-  conversation, reveal/result, `/present`, session persistence, footer
-  behaviour and result-card legibility at two viewports.
+## 2. Architecture
 
-### Deliverables from §27
+```
+src/content/questions.ts        10 questions, each option weighted to 2 tracks
+src/content/tracks.ts           per-persona result copy + `contentSource` flag
+src/features/quiz/
+  types.ts                      QuizOption / QuizQuestion / weight constants
+  scoring/scoreAnswers.ts       pure: answers → scores + deterministic ranking
+  state/quizReducer.ts          answers, index, ranking, selection
+  state/QuizProvider.tsx        React binding + localStorage persistence
+  state/quizStorage.ts          zod-validated v2 session
+  components/                   LandingScene, QuizScene, AnalyzingScene
+src/features/matches/           MatchesScene
+src/features/tracks/            TracksScene
+src/features/reveal/            ResultScene, ResultCard (PNG export), ResultActions
+src/config/characters.ts        the five personas: palette, emblem, artwork
+src/lib/routes.ts               typed route builders (next.config has typedRoutes)
+```
 
-- `README.md` — concept, commands, env vars, structure, character config,
-  mock dialogue, persistence, five-result preview, QR configuration, artwork
-  replacement, export behavior, future AI work.
-- `docs/AI_INTEGRATION.md` — interface contract, server-engine wiring point
-  (`engine/index.ts`), async handling, expected result object, undecided
-  items, pre-integration blockers. **No provider, model, or system prompt**
-  (per §15).
-- `.env.example` — documents `NEXT_PUBLIC_SITE_URL` /
-  `NEXT_PUBLIC_ENABLE_DEV_TOOLS`.
+### One provider per route — and why each route must announce itself
 
-## 2. What is missing / undone (real gaps, ordered by priority)
+Every route mounts its own `<QuizProvider>`. A fresh `/quiz` therefore hydrates
+from storage to `phase: 'landing'`, and the reducer's phase guards would
+**silently drop every answer**.
 
-1. **Production character artwork (blocks §25 "supplied artwork used")**
-   — `public/assets/characters/` contains only a README. The composite
-   `assests/characters.jpg` was judged unsliceable into clean transparent
-   sprites, so the UI ships designed ink placeholders (`PiratePlaceholder`).
-   The plumbing is done: `tools/generate-artwork-manifest.mjs` runs at build
-   time, writes `src/generated/artwork-manifest.ts`, and `CharacterArtwork`
-   skips the network request entirely for tracks with no file — so there are
-   no 404s and no broken-image flash. TODO: obtain or extract isolated
-   transparent PNGs for the 5 tracks, drop them in with the exact filenames in
-   `public/assets/characters/README.md`, update `width`/`height` in
-   `src/config/characters.ts` if dimensions differ. Nothing else to change.
-2. **No deployment** — Vercel-compatible but never deployed; QR needs a real
-   `NEXT_PUBLIC_SITE_URL` before the event (§12: do not invent a URL).
-3. **Reference folder typo** — `assests/` (sic) left untouched on purpose;
-   flag if renaming (update README paths).
-4. **GSAP intentionally removed** — the Plan §10 asks for GSAP on cinematic
-   transitions. It was installed but had zero call sites; all motion is CSS
-   keyframes under a `prefers-reduced-motion` guard. Rather than ship a dead
-   ~70 KB dependency, it was removed from `package.json`. The reveal already
-   satisfies §25 ("reveal is animated and skippable") via CSS. To reinstate:
-   `npm i gsap`, then add a timeline in `RevealingScene` behind an
-   `if (prefersReducedMotion) skip()` guard — the existing E2E reveal tests
-   will catch regressions.
-5. **Not covered by tests** — the `/present` QR *scanning* path (canvas
-   renders and is asserted, but no camera decode), and true device testing on
-   real iOS/Android hardware. Playwright viewports are a good proxy, not a
-   substitute.
+Each scene calls `enterPhase('<phase>')` once hydration finishes. If you add a
+route, do this first or your screen will render and do nothing.
 
-## 3. Bugs found by visual QA and fixed (keep in mind when editing)
+### Latch the entry guards
 
-These were invisible to unit tests and to `tsc`; they only showed up in a real
-browser. Re-run the E2E suite after touching any of these areas.
+`/matches`, `/result` and `/analyzing` redirect away if there is nothing behind
+them. Those checks run **once per mount**, guarded by a ref:
 
-- **`TrackEmblem` silently dropped `className`** — `Frame` destructured only
-  `{children, color, title}` and never spread the remaining SVG props onto the
-  `<svg>`. Every `size-*` passed to it was discarded, so the emblem fell back
-  to its `viewBox` ratio and inflated whatever container it sat in (it was
-  silently making the result card's footer 86 px instead of 44 px and pushing
-  the card content out of frame). Fixed in
-  `src/components/characters/TrackEmblem.tsx` by spreading `...rest` *first*
-  so the fixed attributes still win, plus `width`/`height` 100 % defaults.
-- **Result card clipped its own text** — a fixed `aspect-[4/5]` height plus a
-  fixed `h-72` portrait overflowed the card on narrow viewports; the card is
-  `overflow-hidden`, so the title, track, personality and footer were silently
-  cut off **in the exported PNG as well as on screen**. The 4:5 ratio is a hard
-  requirement (Instagram story), so the fix was to make the content scale, not
-  to let the card grow: `@container` + `@min-[23rem]:` type scale, a
-  container-unit portrait box (`h-[36cqw] w-[30cqw]`), and a short
-  `ui.reveal.demoTag` on the card. `e2e/reveal-result.spec.ts` now asserts both
-  that every child box is inside the card *and* that the inner column does not
-  overflow.
-- **A viewBox SVG ignores `height: 100%`** — `height:100%` against an
-  indefinite parent resolves to `auto`, so the portrait grew to
-  width × 1.3 and painted over the title. Sizing the box in `cqw` units gives
-  `preserveAspectRatio` something definite to letterbox inside.
-- **Reset bar floated over the card** — `ExpeditionFooter` is `fixed`; on the
-  result screen it sat on top of the shareable card. `result` was added to
-  `IMMERSIVE_PHASES`; the link is still reachable from the welcome screen.
-- **`MockConversationEngine` progress overran** — progress could advance past
-  the scenario count and render "8 من 7". Fixed with a regression test.
-- **Hydration mismatches** — nickname state, the provider's hydration flag and
-  the `/present` QR origin are all runtime-only. The reducer carries an
-  explicit hydration flag; the strict lint rules `react-hooks/set-state-in-effect`
-  and `react-hooks/refs` are back to **error**.
+```ts
+if (!isHydrated || checkedEntry.current) return;
+checkedEntry.current = true;
+```
 
-## 4. Plan §25 acceptance checklist — status
+Without the latch, "start over" nulls `selectedTrackId`, re-triggers the guard and
+redirects to `/quiz` while the real navigation to `/` is still in flight.
 
-- [x] Working independent web app; pirate theme matches visual direction
-- [x] All five GDGoC pirate identities (config + reveal + gallery)
-- [ ] **Supplied character artwork used** — placeholders only (§2.1); all
-      plumbing in place, only the PNGs are missing
-- [x] Mobile-first; Egyptian-Arabic primary with English terms; free-text
-      chat only; no multiple-choice, no team stage, no separate stage B
-- [x] Complete mock conversation (7 scenarios → reveal)
-- [x] Mock engine clearly separated from future AI (interface + factory)
-- [x] No real AI provider/scoring; demo results explicitly labelled
-- [x] Restart and resume work (unit- **and** E2E-tested)
-- [x] Each character has a polished result screen (all five previewable)
-- [x] Reveal is animated and skippable
-- [x] Result-card export implemented **and verified in a real browser**
-      (download asserted; card geometry asserted)
-- [x] Common mobile sizes covered by CSS **and** by a 360×800 E2E viewport
-- [x] Projector QR screen exists (`/present`)
-- [x] Important interactions accessible; error + loading states exist
-- [x] TypeScript and production build pass
-- [x] Ready for future AI integration without frontend rewrites
-      (`docs/AI_INTEGRATION.md`)
+---
 
-## 5. Suggested next tasks (in order)
+## 3. Scoring
 
-1. Land the 5 transparent character PNGs in `public/assets/characters/` — the
-   build picks them up automatically, then re-run the E2E suite and check the
-   result card at both viewports (real artwork changes the portrait's aspect).
-2. Deploy, then set the real `NEXT_PUBLIC_SITE_URL` so the `/present` QR
-   resolves (§12 — do not invent a URL).
-3. Optional polish: GSAP reveal timeline (§2.4), real-device pass on iOS
-   Safari and Android Chrome.
-4. Commit with:
-   `git -c user.name="GDG-Game Builder" -c user.email="builder@gdgoc.local"`
-   (no git identity configured on this machine).
+```
+Each option: { primary: 3, secondary: 1 }
+10 answers × 4 points = 40 points across the five tracks
+Max for one track 26 · Min 0 · Median winner 13 · Median lead 3
+```
 
-## 6. Hard constraints to keep honoring (from the Plan)
+Ranking order — **total and deterministic**:
 
-- **§15 — no AI**: no provider, no LLM SDK, no system prompt, no keyword
-  heuristics, no API keys, no client-side LLM calls. Future AI = implement
-  `ConversationEngine` and swap it in `src/features/conversation/engine/index.ts`.
-- **§2/§26 — no scope creep**: no accounts, leaderboards, multiplayer,
-  island navigation, analytics, WhatsApp portal, databases.
-- **§2 — honesty**: demo results must never read as analysed personalities;
-  keep `origin: 'demo'` labels (the card carries the short `demoTag`, the
-  result screen keeps the full `demoBanner`) and the mock-engine note in the
-  chat header.
-- **Arabic-first copy** lives in `src/content/ui.ts` and
-  `src/content/dialogue/mockScript.ts` — never hardcode copy in JSX (§22).
-  Run `python3 tools/check-copy.py` after editing copy.
-- Conventions: feature folders under `src/features`, `@/` path alias,
-  `React.JSX.Element` return types, lint-enforced `type` imports, absolute
-  paths when referring to files.
-- **Shared components must forward their props.** A component that accepts
-  `className` and silently discards it is a real bug here — it caused the card
-  clipping in §3. Spread `...rest` onto the DOM node.
-- Before claiming done: `npm run typecheck && npm run lint && npm run test &&
-  npm run build && python3 tools/check-copy.py && npm run test:e2e`.
+1. `score` desc
+2. `primaryHits` desc
+3. `secondaryHits` desc
+4. `TRACK_IDS` order (fixed last resort, so the comparator is never partial)
+
+Pure and synchronous. No engine, no network, no AI.
+
+### Fairness invariant (enforced by tests)
+
+Over all 40 options, each track is the **primary of exactly 8** and the
+**secondary of exactly 8**; each is absent from exactly 2 of the 10 questions.
+The bank cannot favour a track — only the answers can.
+
+Secondary affinity graph:
+
+```
+SE → WEB, SEC     AI → DATA, WEB     WEB → SE, DATA
+DATA → AI,  SEC   SEC → SE,  AI
+```
+
+A zero score **is** reachable (you pick 10 of 40 options; a track appears in 8),
+at roughly 0.2–0.5 % per track. That is honest, not a bug — `scoreAnswers.test.ts`
+pins the rate rather than pretending it cannot happen.
+
+---
+
+## 4. Assets
+
+`assests/` is the design source of truth and is **not** modified.
+
+- `assests/Characters/*.png` → copied to `public/assets/characters/<trackId>.png`.
+  The filenames *are* the `TrackId`s; `tools/generate-artwork-manifest.mjs` derives
+  `src/generated/artwork-manifest.ts` from whatever it finds there.
+- `assests/UI/*.png` are **reference screenshots only**. Never ship them, never
+  slice them into UI.
+
+All five character PNGs were verified by decoding their alpha channel: 1024×1536
+RGBA, transparent corners, 45–57 % transparent, 3–5 % soft glow. They are **2:3,
+not 1:1** — `artwork.width/height` are 1024×1536 so the browser reserves the right
+box and the export has no layout shift.
+
+Characters render as plain `<img>`, **not** `next/image`: `html-to-image` re-fetches
+every image URL while composing the export, and `/_next/image` is not a reliable
+canvas source.
+
+### Missing by design
+
+The spec names backgrounds, props and a logo SVG that do not exist
+(`assets/backgrounds/*.webp`, `assets/props/*`, `assets/branding/*.svg`).
+Per the spec's own `asset_missing_behavior` these are CSS atmosphere. Do not
+invent them by cropping screenshots.
+
+---
+
+## 5. What was deleted
+
+The chat system, in full: `components/chat/*`, `features/conversation/**`,
+`features/expedition/**`, `features/session/sessionStorage.ts`,
+`content/dialogue/mockScript.ts`, `components/shared/DevTools.tsx`,
+`features/reveal/RevealingScene.tsx`, `CharacterGallery`, `SecondaryAffinity`,
+and `e2e/{conversation,welcome,reveal-result,present}.spec.ts`.
+
+`docs/AI_INTEGRATION.md` went with it: there is no engine boundary left to
+document, because there is no engine.
+
+---
+
+## 6. Things that will bite you
+
+**The result card clips.** The frame is `overflow-hidden` at a fixed 4:5, so
+content that is too tall is *clipped and lost*, not scrolled. This ate the traits
+and the secondary card once already. `e2e/result-card.spec.ts` → *"never clips its
+own content, for any track"* measures every descendant against the frame for all
+five personas. If you add a section, that test must still pass. Widening the card
+(`max-w-[26rem]`) is how you buy vertical room — a wider card at a fixed aspect is
+a taller one.
+
+**The PNG export sizes twice, and silently.** `html-to-image` has *two* separate
+sizing mechanisms:
+
+- `width`/`height` size the **SVG source** only. The card still lays out at its
+  natural CSS width; these do not make a bigger bitmap.
+- `canvasWidth`/`canvasHeight` size the **bitmap**, and the bitmap is then
+  multiplied by `pixelRatio`.
+
+The export originally passed `width: 1080, height: 1350` *and* `pixelRatio: 3`,
+believing it scaled the 360px layout up to 1080. It did the opposite: 1080 × 3 =
+**3240×4050**, a 1.37 MB file. Correct is `canvasWidth`/`canvasHeight` with
+`pixelRatio: 1` — the SVG then scales up vectorially, so text stays crisp and the
+file is 1080×1350 at ~1.0 MB. The download test now asserts the exact geometry, so
+a regression here fails CI instead of shipping a 3× file.
+
+**Arabic RTL bidi.** Every Latin run needs `dir="ltr"` (global `unicode-bidi:
+isolate` is set for you) or `dir="auto"` for user input. Track names, `GDGoC`,
+`Builder` and the exported filename all contain Latin.
+
+**Logical properties in RTL.** `start`/`end` are logical, not physical. The
+landing hero stage had to be emitted in reverse (`[4,3,2,1,0]`) to appear
+left-to-right as the reference does. The quiz captain uses `-start-2`, which is
+the image-right in this document.
+
+**`typedRoutes: true`.** A bare `` `/result/${id}` `` widens to `string` and fails
+to typecheck. Use `resultRoute(trackId)` from `@/lib/routes`.
+
+**Arabic-Indic digits.** Visible numbers go through `toArabicDigits()`. When
+reading digits out of the DOM in a test, map `٠-٩` back first.
+
+---
+
+## 7. Content provenance
+
+`content/tracks.ts` carries a `contentSource` flag per persona:
+
+- `spec` — verbatim from the supplied result-card JSON. **Software Engineering
+  and Artificial Intelligence only.**
+- `authored` — written for this build to the same structure. **Web Development,
+  Data Science, Cybersecurity.** The client supplied no reference for these.
+
+`allContentIsSpecApproved()` returns `false` today. If the client sends approved
+copy for the remaining three, flip the flags rather than deleting the field.
+
+Question 3 reproduces the approved screenshot's four option texts **verbatim**;
+its only change is that the data option carries `cybersecurity` as a secondary,
+because the spec flags that its own example omits security entirely.
+
+---
+
+## 8. Next work
+
+Nothing is blocked. Possible follow-ups, none required:
+
+- `/tracks` cards become selectable only once a ranking exists — by design, since
+  browsing must not look like scoring.
+- Share currently downloads a PNG; there is no server-side result, by design.
+- `assests/` is ~14 MB and untracked by choice — add it to `.gitignore` or keep it
+  as the design source, but decide deliberately.

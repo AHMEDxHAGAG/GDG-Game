@@ -2,77 +2,106 @@
 
 /* ------------------------------------------------------------------ *
  * Design tokens
- * Palette and typography are inherited from the GDGoC AASTMT Aswan
- * pirate-expedition visual language (parchment + ink + muted sea).
+ * Values come from
+ * assests/UI/gdgoc-pirate-personality-spec/shared-design-state.json.
+ *
+ * The theme is a moonlit harbour: near-black navy surfaces, warm lantern
+ * light, and cream parchment reserved for the surfaces that carry Arabic
+ * body copy. Dark ink + parchment scales are kept for exactly that reason —
+ * `text-ink` on `surface-parchment` is the quiz question card.
  * ------------------------------------------------------------------ */
 
 @theme {
-  /* Surfaces */
+  /* Night harbour surfaces */
+  --color-background: #090f22;
+  --color-background-deep: #090b17;
+  --color-surface: #151827;
+  --color-surface-tinted: #201b27;
+  --color-surface-border: #656077;
+
+  /* Parchment — cream panels that carry Arabic copy */
   --color-parchment-50: #fbf3df;
-  --color-parchment-100: #f6e9c8;
-  --color-parchment-200: #eeddad;
+  --color-parchment-100: #ffe6bd;
+  --color-parchment-200: #f3d4a8;
   --color-parchment-300: #e8d3a3;
   --color-parchment-400: #dcc191;
   --color-parchment-500: #c9a86a;
-  --color-parchment-600: #b08e56;
+  --color-parchment-600: #a36b46;
   --color-parchment-700: #9a7043;
   --color-parchment-800: #7a5734;
   --color-parchment-900: #55402a;
 
-  /* Ink */
-  --color-ink: #24201a;
+  /* Ink — text colour for use on parchment only */
+  --color-ink: #20161a;
   --color-ink-soft: #554535;
   --color-ink-faint: #7d6a55;
 
-  /* Sea + wood */
+  /* Night text */
+  --color-text-primary: #fff4e5;
+  --color-text-secondary: #d9d8e3;
+
+  /* Ship */
+  --color-wood: #392019;
+  --color-wood-bright: #67402b;
+  --color-sea-blue: #123a68;
+
+  /* Accents */
+  --color-accent-red: #b72f30;
+  --color-accent-red-high: #e24e45;
+  --color-accent-gold: #ffd28a;
+  --color-lantern-light: #ffb961;
+  --color-focus: #9ad8ff;
+  --color-progress-inactive: #6a6a83;
+
+  /* Retained aliases for components that predate the re-skin. Phases 6-9
+     move every survivor onto the names above; these exist so the tree stays
+     buildable between phases. */
   --color-ocean: #72969a;
   --color-ocean-deep: #456e75;
   --color-ocean-mist: #a4bcb5;
-  --color-wood: #684832;
-  --color-wood-dark: #4a3323;
+  --color-gold: #ffd28a;
+  --color-gold-bright: #ffb961;
+  --color-treasure: #e24e45;
+  --color-flag-blue: #9ad8ff;
+  --color-flag-red: #e24e45;
+  --color-flag-yellow: #ffd28a;
+  --color-flag-green: #78daa0;
 
-  /* Accents */
-  --color-gold: #b78a43;
-  --color-gold-bright: #d9ac5e;
-  --color-treasure: #a44732;
-  --color-flag-blue: #4285f4;
-  --color-flag-red: #ea4335;
-  --color-flag-yellow: #fbbc04;
-  --color-flag-green: #34a853;
-
-  /* Typography */
-  --font-display: var(--font-pirata), 'Georgia', serif;
-  --font-sans: var(--font-cairo), 'Segoe UI', system-ui, sans-serif;
+  /* Typography — Cairo for Arabic headings, Tajawal for Arabic body,
+     Space Grotesk for Latin brand marks. All three are wired in layout.tsx. */
+  --font-display: var(--font-cairo), 'Tajawal', system-ui, sans-serif;
+  --font-sans: var(--font-tajawal), var(--font-cairo), 'Segoe UI', system-ui, sans-serif;
+  --font-brand: var(--font-grotesk), system-ui, sans-serif;
 
   /* Motion */
   --ease-nautical: cubic-bezier(0.22, 0.68, 0.24, 1);
 
-  /* Radii — deliberately small; this is paper and wood, not app chrome */
+  /* Radii — the frame language is chipped/cut corners, not pills */
   --radius-xs: 2px;
   --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
+  --radius-md: 7px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
 }
 
 /* ------------------------------------------------------------------ *
  * Track accent tokens
- * Each pirate has a vivid accent (artwork, effects) and a deep accent
- * (text and borders on parchment, where vivid colours lose contrast).
+ * Exact hexes from the spec's track_themes block. `vivid` is used for
+ * borders, glows and large display type; `deep` is the only track colour
+ * safe as text on parchment.
  * ------------------------------------------------------------------ */
 
 :root {
-  --track-swe-vivid: #d33a2c;
-  --track-swe-deep: #8e2318;
-  --track-ai-vivid: #2e86de;
-  --track-ai-deep: #12508c;
-  --track-web-vivid: #e88b22;
-  --track-web-deep: #94520a;
-  --track-data-vivid: #8e44c4;
-  --track-data-deep: #56297f;
-  --track-cyber-vivid: #22a850;
-  --track-cyber-deep: #146238;
-
-  --scene-inset: 0px;
+  --track-swe-vivid: #f45361;
+  --track-swe-deep: #3d101e;
+  --track-ai-vivid: #66baff;
+  --track-ai-deep: #0c2c64;
+  --track-web-vivid: #ffa35d;
+  --track-web-deep: #56270d;
+  --track-data-vivid: #c27bff;
+  --track-data-deep: #30124c;
+  --track-cyber-vivid: #78daa0;
+  --track-cyber-deep: #123a27;
 }
 
 @theme inline {
@@ -89,15 +118,12 @@
 
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
   }
 
   html {
-    /* Mobile browsers resize the layout viewport when the soft keyboard opens.
-       Keeping a stable viewport is what stops the composer from being pushed
-       under the keyboard. */
     height: 100%;
     scroll-behavior: smooth;
   }
@@ -105,8 +131,8 @@
   body {
     margin: 0;
     min-height: 100%;
-    background-color: var(--color-parchment-300);
-    color: var(--color-ink);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
     font-family: var(--font-sans);
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
@@ -131,13 +157,13 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-flag-blue);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
     border-radius: var(--radius-xs);
   }
 
   ::selection {
-    background: var(--color-gold-bright);
+    background: var(--color-accent-gold);
     color: var(--color-ink);
   }
 
@@ -145,26 +171,59 @@
   [dir='auto'] {
     unicode-bidi: plaintext;
   }
+
+  /* Same protection for explicit LTR spans that carry acronyms
+     (GDGoC, AASTMT, Builder, track names in English). */
+  [dir='ltr'] {
+    unicode-bidi: isolate;
+  }
 }
 
 /* ------------------------------------------------------------------ *
  * Utilities
  * ------------------------------------------------------------------ */
 
-@utility paper-grain {
-  position: relative;
-}
-
 @utility surface-parchment {
   background-color: var(--color-parchment-200);
   background-image:
-    radial-gradient(ellipse at 22% 18%, rgb(114 150 154 / 0.14) 0%, transparent 55%),
-    radial-gradient(ellipse at 78% 72%, rgb(114 150 154 / 0.12) 0%, transparent 52%),
-    linear-gradient(180deg, rgb(251 243 223 / 0.55) 0%, rgb(201 168 106 / 0.18) 100%);
+    radial-gradient(ellipse at 22% 18%, rgb(163 107 70 / 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at 78% 72%, rgb(163 107 70 / 0.14) 0%, transparent 52%),
+    linear-gradient(180deg, rgb(255 230 189 / 0.7) 0%, rgb(201 168 106 / 0.2) 100%);
 }
 
-@utility text-shadow-ink {
-  text-shadow: 0 1px 0 rgb(36 32 26 / 0.18);
+/** Dark ship-deck / cabin surface used behind most screens. */
+@utility surface-hull {
+  background-color: var(--color-surface);
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgb(255 185 97 / 0.09) 0%, transparent 60%),
+    linear-gradient(180deg, var(--color-surface-tinted) 0%, var(--color-background-deep) 100%);
+}
+
+/**
+ * Chipped / cut corner frame — the RPG window border.
+ * Implemented with a clip-path so it needs no nine-slice artwork, and it
+ * never clips focus rings on children because it only paints its own box.
+ */
+@utility pixel-frame {
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+}
+
+/** Soft warm halo, used behind lanterns and track-coloured magic props. */
+@utility glow-warm {
+  box-shadow: 0 0 26px rgb(255 185 97 / 0.24);
+}
+
+@utility text-shadow-pixel {
+  text-shadow:
+    0 2px 0 rgb(9 11 23 / 0.85),
+    0 4px 14px rgb(9 11 23 / 0.7);
 }
 
 @utility ruled-line {
@@ -187,6 +246,8 @@
 
 /* ------------------------------------------------------------------ *
  * Motion
+ * Every looping animation is decorative and decorative only: the spec
+ * caps ship drift at 6px and character idle float at 4px.
  * ------------------------------------------------------------------ */
 
 @keyframes bob {
@@ -209,39 +270,61 @@
   }
 }
 
-@keyframes drift {
-  0% {
+/** Hero ship parallax. Capped at 6px per the spec's motion budget. */
+@keyframes ship-drift {
+  0%,
+  100% {
     transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translate3d(-14px, -6px, 0);
-  }
-  100% {
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, -6px, 0);
   }
 }
 
-@keyframes bubble-in {
+/** Character idle float. Capped at 4px. */
+@keyframes float-idle {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+/** Lantern flicker: opacity + a hair of scale, never a colour shift. */
+@keyframes lantern-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  42% {
+    opacity: 0.82;
+  }
+  64% {
+    opacity: 0.94;
+  }
+}
+
+/** Entrance used by every screen instead of the old chat bubble pop. */
+@keyframes rise-in {
   from {
     opacity: 0;
-    transform: translate3d(0, 10px, 0) scale(0.97);
+    transform: translate3d(0, 12px, 0);
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-@keyframes typing-dot {
-  0%,
-  60%,
-  100% {
-    opacity: 0.25;
-    transform: translate3d(0, 0, 0);
+/** Indeterminate progress bar sweep. Only ever used with a null value. */
+@keyframes progress-shimmer {
+  from {
+    transform: translate3d(-100%, 0, 0);
   }
-  30% {
-    opacity: 1;
-    transform: translate3d(0, -3px, 0);
+  to {
+    transform: translate3d(320%, 0, 0);
   }
 }
 
@@ -260,14 +343,20 @@
 .animate-sway {
   animation: sway 7s var(--ease-nautical) infinite;
 }
-.animate-drift {
-  animation: drift 19s ease-in-out infinite;
+.animate-ship-drift {
+  animation: ship-drift 19s ease-in-out infinite;
 }
-.animate-bubble-in {
-  animation: bubble-in 0.42s var(--ease-nautical) both;
+.animate-float-idle {
+  animation: float-idle 6s ease-in-out infinite;
 }
-.animate-typing-dot {
-  animation: typing-dot 1.25s ease-in-out infinite;
+.animate-lantern-flicker {
+  animation: lantern-flicker 4.5s ease-in-out infinite;
+}
+.animate-rise-in {
+  animation: rise-in 0.42s var(--ease-nautical) both;
+}
+.animate-progress-shimmer {
+  animation: progress-shimmer 1.6s var(--ease-nautical) infinite;
 }
 .animate-reveal-sweep {
   animation: reveal-sweep 1.6s var(--ease-nautical) infinite;
@@ -275,7 +364,9 @@
 
 /* ------------------------------------------------------------------ *
  * Reduced motion
- * Every entrance is still reachable; only the movement is removed.
+ * Every entrance is still reachable; only the movement is removed. The
+ * indeterminate progress bar falls back to a static fill rather than
+ * disappearing, so progress is never misread as "stuck".
  * ------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
@@ -290,5 +381,11 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .animate-progress-shimmer {
+    animation: none !important;
+    transform: none !important;
+    background: var(--color-sea-blue) !important;
   }
 }

@@ -2,7 +2,7 @@
   "name": "gdgoc-pirate-identity-expedition",
   "version": "0.1.0",
   "private": true,
-  "description": "GDGoC AASTMT Aswan — The Pirate Identity Expedition. A mobile-first, chat-driven pirate personality adventure (conversation engine mocked, AI-ready boundary).",
+  "description": "GDGoC AASTMT Aswan \u2014 Discover Your Personality. A mobile-first, Arabic RTL quiz: ten multiple-choice questions scored locally into a weighted ranking of five tracks, with a downloadable username card.",
   "scripts": {
     "predev": "node tools/generate-artwork-manifest.mjs",
     "dev": "next dev",
@@ -17,7 +17,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    
     "html-to-image": "^1.11.13",
     "lucide-react": "^1.54.0",
     "next": "^16.4.0",

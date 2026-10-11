@@ -3,7 +3,11 @@
 
 /** Track ids with real character artwork in `public/assets/characters/`. */
 export const ARTWORK_IDS = [
-
+  'ai',
+  'cybersecurity',
+  'data-science',
+  'software-engineering',
+  'web-development',
 ] as const;
 
 export type ArtworkId = (typeof ARTWORK_IDS)[number];

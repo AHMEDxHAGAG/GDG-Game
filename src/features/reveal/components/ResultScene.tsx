@@ -1,135 +1,188 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { ui } from '@/content/ui';
 import { getCharacter } from '@/config/characters';
-import type { ExpeditionResult } from '@/features/conversation/types';
-import { useExpedition } from '@/features/expedition/state/ExpeditionProvider';
-import { CharacterBadge, CharacterPortrait } from '@/components/characters/CharacterPortrait';
-import { CharacterGallery } from '@/features/characters/components/CharacterGallery';
-import { ResultCard, type ResultCardHandle } from '@/features/reveal/components/ResultCard';
-import { SecondaryAffinity } from '@/features/reveal/components/SecondaryAffinity';
-import { ResultActions, useResultExport } from '@/features/reveal/components/ResultActions';
+import { useQuiz } from '@/features/quiz/state/QuizProvider';
+import { resultRoute, trackIdFromRoute } from '@/lib/routes';
 import { NauticalBackground } from '@/components/shared/NauticalBackground';
-import { ParchmentPanel } from '@/components/shared/ParchmentPanel';
+import { CharacterArtwork } from '@/components/characters/CharacterArtwork';
+import { TrackEmblem } from '@/components/characters/TrackEmblem';
+import { ResultCard, type ResultCardHandle } from '@/features/reveal/components/ResultCard';
+import { ResultActions, useResultExport } from '@/features/reveal/components/ResultActions';
+import { TRACK_CONTENT } from '@/content/tracks';
 
 export interface ResultSceneProps {
-  result: ExpeditionResult;
+  /** The track id from the route. */
+  trackId: string;
 }
 
-export function ResultScene({ result }: ResultSceneProps): React.JSX.Element {
-  const { state, previewTrack } = useExpedition();
-  const character = getCharacter(result.trackId);
-  const [introDone, setIntroDone] = useState(false);
-  const [galleryOpen, setGalleryOpen] = useState(false);
+/**
+ * The chosen persona's card.
+ *
+ * The card is the deliverable: username plus the chosen track, downloadable and
+ * shareable. Everything above it explains how that track was reached.
+ */
+export function ResultScene({ trackId }: ResultSceneProps): React.JSX.Element {
+  const router = useRouter();
+  const { state, isHydrated, enterPhase, clearSession } = useQuiz();
   const cardRef = useRef<ResultCardHandle>(null);
-  const { shareState, share, exportPng } = useResultExport(cardRef, character);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const announced = useRef(false);
+  // Latches the entry check below so it runs once per mount, not on every
+  // state change.
+  const checkedEntry = useRef(false);
+  const correctedRoute = useRef(false);
 
-  // Timed silhouette → portrait entrance. The timer is the effect; no
-  // synchronous setState, and switching tracks restarts via the key below.
+  const selected = state.selectedTrackId;
+  const character = selected !== null ? getCharacter(selected) : null;
+  const match = state.ranking?.find((entry) => entry.trackId === selected) ?? null;
+  const copy = selected !== null ? TRACK_CONTENT[selected] : null;
+
+  const { shareState, share, exportPng } = useResultExport(
+    cardRef,
+    character ?? getCharacter('software-engineering'),
+    state.username,
+  );
+
   useEffect(() => {
-    const id = window.setTimeout(() => setIntroDone(true), 2100);
-    return () => window.clearTimeout(id);
-  }, [result.trackId]);
+    if (character !== null) headingRef.current?.focus();
+  }, [character]);
+
+  // Hydration has to finish, and the visitor must actually have picked a track.
+  // A deep link to /result/:id is not enough — it would let anyone mint a card
+  // for a persona they never scored.
+  useEffect(() => {
+    if (!isHydrated) return;
+    enterPhase('result');
+  }, [isHydrated, enterPhase]);
+
+  //
+  // Latched with a ref on purpose: this is an entry check, not a standing
+  // invariant. Without the latch, pressing "start over" nulls
+  // `selectedTrackId`, which re-triggers this effect and redirects to `/quiz`
+  // while the real navigation to `/` is still in flight.
+  useEffect(() => {
+    if (!isHydrated || checkedEntry.current) return;
+    checkedEntry.current = true;
+    if (state.selectedTrackId === null) {
+      router.replace('/quiz');
+      return;
+    }
+    announced.current = true;
+    document.title = `${getCharacter(state.selectedTrackId).titleAr} · ${ui.card.eyebrow}`;
+  }, [isHydrated, state.selectedTrackId, router]);
+
+  // The route segment and the stored selection must agree. If a visitor edits
+  // the URL by hand, trust the stored selection, never the URL — otherwise a
+  // crafted link could mint a card for a persona the visitor never scored.
+  useEffect(() => {
+    if (selected === null || correctedRoute.current) return;
+    const routeTrack = trackIdFromRoute(trackId);
+    if (routeTrack === null || routeTrack !== selected) {
+      correctedRoute.current = true;
+      router.replace(resultRoute(selected));
+    }
+  }, [selected, trackId, router]);
+
+  if (!isHydrated || character === null || copy === null) {
+    return (
+      <NauticalBackground>
+        <main className="grid min-h-[100dvh] place-items-center" aria-busy="true">
+          <span className="sr-only">{ui.errors.missingResult}</span>
+        </main>
+      </NauticalBackground>
+    );
+  }
 
   return (
-    <NauticalBackground withCompass>
+    <NauticalBackground withLantern>
       <main
-        className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(2.75rem,env(safe-area-inset-bottom))]"
+        className="mx-auto flex min-h-[100dvh] w-full max-w-[46rem] flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6"
         data-scene="result"
       >
-        <p
-          dir="ltr"
-          aria-hidden={introDone}
-          className="mt-2 text-center text-[0.72rem] font-bold tracking-[0.3em] text-ink-soft uppercase"
-        >
-          {ui.reveal.chosen}
+        <header className="flex items-center justify-between gap-3">
+          <h1
+            ref={headingRef}
+            tabIndex={-1}
+            className="sr-only"
+          >
+            {copy.eyebrow} {copy.personaTitleAr}
+          </h1>
+          <p className="text-[0.8rem] font-bold text-text-secondary">{ui.card.eyebrow}</p>
+          {match ? (
+            <p
+              dir="ltr"
+              data-testid="result-rank"
+              className="rounded-full border border-surface-border px-2.5 py-0.5 text-[0.72rem] font-bold text-text-primary"
+            >
+              #{match.rank} · {ui.matches.scoreLabel(match.score)}
+            </p>
+          ) : null}
+        </header>
+
+        {/* Quick summary above the card — the card itself stays clean so the
+            exported PNG reads well. */}
+        <div className="mt-3 flex items-center gap-3">
+          <span className="h-20 w-14 shrink-0">
+            <CharacterArtwork character={character} className="h-full w-full" priority />
+          </span>
+          <div className="min-w-0">
+            <p
+              className="text-[0.75rem] font-bold text-text-secondary"
+              style={{ color: character.palette.vivid }}
+            >
+              {copy.personaTitleAr}
+            </p>
+            <p className="text-lg leading-tight font-extrabold text-text-primary">
+              {copy.trackSubtitleAr}
+            </p>
+            <p className="mt-0.5 flex items-center gap-1.5">
+              <TrackEmblem
+                emblem={character.emblem}
+                color={character.palette.vivid}
+                className="size-3.5 shrink-0"
+              />
+              <span dir="ltr" className="text-[0.75rem] text-text-secondary">
+                {character.trackName}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-3 text-[0.85rem] leading-relaxed text-text-secondary">
+          {copy.taglineAr}
         </p>
 
-        <div className="relative mt-1 flex w-full flex-col items-center">
-          {!introDone ? (
-            <div className="grid h-56 w-44 place-items-center" aria-hidden="true">
-              <span className="animate-sway inline-block h-52 w-40 rounded-t-full bg-ink/85 blur-[1px]" />
-            </div>
-          ) : (
-            <CharacterPortrait
-              character={character}
-              priority
-              className="animate-bubble-in h-60 w-48"
-            />
-          )}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-8 top-6 bottom-0 -z-10 rounded-full blur-2xl"
-            style={{ backgroundColor: character.palette.wash }}
+        <div className="mt-4 w-full">
+          <ResultCard
+            ref={cardRef}
+            character={character}
+            username={state.username}
+            match={match}
           />
         </div>
 
-        <p
-          dir="ltr"
-          className="mt-3 text-center text-[0.72rem] font-bold tracking-[0.3em] text-ink-faint uppercase"
-        >
-          {ui.reveal.resultHeading}
+        <p className="mt-3 text-center text-[0.8rem] leading-relaxed text-text-secondary">
+          {character.discoveryNoteAr}
         </p>
-        <h1
-          dir="ltr"
-          className="mt-1 text-center font-display text-[clamp(1.9rem,9vw,2.7rem)] leading-none text-ink"
-        >
-          {character.title}
-        </h1>
-        <p
-          className="mt-1 text-center text-lg font-extrabold"
-          style={{ color: character.palette.deep }}
-        >
-          {character.titleAr} · <span dir="ltr">{character.trackName}</span>
-        </p>
-        <div className="mt-2 flex justify-center">
-          <CharacterBadge character={character} />
-        </div>
-        <p className="mt-3 max-w-md text-center text-[0.95rem] leading-relaxed font-semibold">
-          {character.personalityAr}
-        </p>
-        {result.origin === 'demo' ? (
-          <p className="mt-3 rounded-md border border-dashed border-gold/70 bg-parchment-100/70 px-3 py-2 text-center text-[0.78rem] font-bold text-ink-soft">
-            {ui.reveal.demoBanner}
-          </p>
-        ) : null}
-        <div className="mt-5 w-full">
-          <ResultCard ref={cardRef} character={character} nickname={state.nickname} origin={result.origin} />
-        </div>
-        <ParchmentPanel className="mt-4 w-full p-4" torn>
-          <h2 className="text-[0.95rem] font-extrabold">{ui.reveal.whyHeading}</h2>
-          {result.explanation ? (
-            <p className="mt-1.5 text-[0.9rem] leading-relaxed" dir="auto">{result.explanation}</p>
-          ) : (
-            <p className="mt-1.5 text-[0.85rem] leading-relaxed text-ink-soft">
-              <span className="mb-1 block text-[0.7rem] font-bold tracking-wide text-ink-faint uppercase">
-                {ui.reveal.sampleExplanationLabel}
-              </span>
-              {character.personalityAr}
-            </p>
-          )}
-          {result.secondaryTrackId ? (
-            <div className="mt-3"><SecondaryAffinity trackId={result.secondaryTrackId} /></div>
-          ) : null}
-          <p className="mt-3 text-[0.85rem] font-bold text-ink-soft">{character.discoveryNoteAr}</p>
-        </ParchmentPanel>
+
         <ResultActions
           shareState={shareState}
           onShare={() => void share()}
           onExport={() => void exportPng()}
-          onGallery={() => setGalleryOpen(true)}
+          onBackToMatches={() => router.push('/matches')}
+          onTracks={() => router.push('/tracks')}
+          onRestart={() => {
+            // clearSession wipes storage too; a plain `restart()` would leave a
+            // stale run behind and the next visitor would inherit it.
+            clearSession();
+            router.push('/');
+          }}
         />
-        {galleryOpen ? (
-          <CharacterGallery
-            activeId={character.id}
-            onSelect={(track) => { previewTrack(track); setGalleryOpen(false); }}
-            onClose={() => setGalleryOpen(false)}
-          />
-        ) : null}
       </main>
     </NauticalBackground>
   );
 }
-
