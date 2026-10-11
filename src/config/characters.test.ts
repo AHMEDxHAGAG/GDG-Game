@@ -25,7 +25,7 @@ describe('character catalogue', () => {
       expect(character.artwork.alt).toBeTruthy();
       expect(character.artwork.width).toBeGreaterThan(0);
       // Artwork src points at the production slot; placeholders render
-      // until the transparent PNGs land in public/assets/characters/.
+      // until the WebP derivatives land in public/assets/characters/.
       expect(character.artwork.src).toMatch(/^\/assets\/characters\/.+\.webp$/);
       expect(getCharacter(character.id)).toEqual(CHARACTERS[character.id]);
     }

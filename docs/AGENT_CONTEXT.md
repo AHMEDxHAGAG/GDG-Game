@@ -12,10 +12,10 @@ and its scripted dialogue were all deleted — see §5.
 | --- | --- | --- |
 | Types | `npm run typecheck` | clean |
 | Lint | `npm run lint` | 0 errors, 0 warnings |
-| Unit | `npm test` | 5 files, **81 tests** pass |
-| Build | `npm run build` | clean, 8 routes |
+| Unit | `npm test` | 6 files, **83 tests** pass |
+| Build | `npm run build` | clean, 8 routes (all prerendered) |
 | Copy | `python3 tools/check-copy.py` | clean (no CJK leakage in Arabic copy) |
-| E2E | `npm run test:e2e` | **106 tests** pass (53 × mobile Pixel 7 + desktop 1440×900) |
+| E2E | `npm run test:e2e` | **118 tests** pass (59 × mobile Pixel 7 + desktop 1440×900) |
 
 ---
 
@@ -118,7 +118,9 @@ pins the rate rather than pretending it cannot happen.
 
 ## 4. Assets
 
-`assests/` is the design source of truth and is **not** modified.
+`assests/` is the design source of truth. It stays on disk but is **gitignored**
+(see §8), so a fresh clone does not have it; only `npm run assets:prepare` needs
+it.
 
 - `assests/Characters/*.png` → copied to `public/assets/characters/<trackId>.png`.
   The filenames *are* the `TrackId`s; `tools/generate-artwork-manifest.mjs` derives
@@ -159,7 +161,29 @@ document, because there is no engine.
 
 ## 6. Things that will bite you
 
-**The result card clips.** The frame is `overflow-hidden` at a fixed 4:5, so
+**Bundle weight is framework-dominated, and that is the floor.** Measured on
+the production build at 360×800, each route pulls ~199 KB gzip of JS. Only
+~30 KB of that is application code; the rest is React 19 + the Next 16
+runtime, which this project cannot shrink. The two things that *were*
+removable are gone as of the perf pass below. Before optimising further, run
+the numbers rather than guessing — a DPR-1 browser says the character and
+prop art is 3× oversized, and it is wrong, because real phones are DPR 2–3 and
+the shipped WebPs are already sized for that.
+
+### Perf pass: what was changed, and what was measured
+
+| Change | Effect |
+| --- | --- |
+| `zod` removed from `quizStorage.ts` | **−30 KB gzip JS on 5 of 6 routes** (−120 KB decoded). The schema runtime was 122 KB raw / 34 KB gzip to validate one small localStorage payload, on the critical path of every route that mounts a provider. Hand-written guards now, same behaviour, `quizStorage.test.ts` pins all 16 cases. `/present` never mounted a provider and never paid it. |
+| `generateStaticParams` on `/result/[trackId]` | The route was the app's only dynamic one (`ƒ`); every share link paid a server render. All five personas are now `●` prerendered. `dynamicParams` is deliberately left at its default: see below. |
+
+`/result/<unknown-id>` resolves **200**, not 404, and that is intended.
+`dynamicParams = false` turns it into a 404, but that same response is what a
+valid shared link gets when opened on a device with no stored session — and
+`ResultScene` already answers both with its "finish the quiz first" guard.
+Making it a 404 would break the share case to tidy the typo case.
+
+### The result card clips. The frame is `overflow-hidden` at a fixed 4:5, so
 content that is too tall is *clipped and lost*, not scrolled. This ate the traits
 and the secondary card once already. `e2e/result-card.spec.ts` → *"never clips its
 own content, for any track"* measures every descendant against the frame for all
@@ -224,5 +248,22 @@ Nothing is blocked. Possible follow-ups, none required:
 - `/tracks` cards become selectable only once a ranking exists — by design, since
   browsing must not look like scoring.
 - Share currently downloads a PNG; there is no server-side result, by design.
-- `assests/` is ~14 MB and untracked by choice — add it to `.gitignore` or keep it
-  as the design source, but decide deliberately.
+- `assests/` is ~72 MB and is **gitignored** (it was tracked until the perf
+  cleanup; `.gitignore` now carries it). It is the design source of truth and
+  stays on disk, but a fresh clone does not have it. Nothing in the build path
+  reads it: `prebuild`/`predev`/`pretest` run `tools/generate-artwork-manifest.mjs`,
+  which only looks at `public/assets/characters/`. The one script that needs the
+  originals is `npm run assets:prepare` (`tools/prepare-ui-assets.mjs`), which is
+  run deliberately and now exits with an explanation rather than an ENOENT stack
+  when the bundle is absent. Shrinking the existing `.git` (~75 MB) would need a
+  history rewrite — deliberately not done.
+- The five original `public/assets/characters/*.png` were **deleted**. They were
+  byte-identical duplicates of `assests/Characters/` (verified by md5), nothing ever
+  requested them — `prepare-ui-assets.mjs` resizes straight from `assests/` — and they
+  cost ~9 MB in every deployment. The originals in `assests/` are the source of truth
+  and are untouched.
+- If Supabase is ever added: it cannot make this app faster. Scoring is local
+  arithmetic, content is bundled, and there is no data path to accelerate — an
+  inserted one adds a round trip. Where it would genuinely fit is live
+  participation counts on `/present`, which is explicitly out of scope today
+  ("No live stats, no tracking").

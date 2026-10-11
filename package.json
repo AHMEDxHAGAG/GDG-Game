@@ -2,7 +2,7 @@
   "name": "gdgoc-pirate-identity-expedition",
   "version": "0.1.0",
   "private": true,
-  "description": "GDGoC AASTMT Aswan \u2014 Discover Your Personality. A mobile-first, Arabic RTL quiz: ten multiple-choice questions scored locally into a weighted ranking of five tracks, with a downloadable username card.",
+  "description": "GDGoC AASTMT Aswan — Discover Your Personality. A mobile-first, Arabic RTL quiz: ten multiple-choice questions scored locally into a weighted ranking of five tracks, with a downloadable username card.",
   "scripts": {
     "assets:prepare": "node tools/prepare-ui-assets.mjs && node tools/generate-artwork-manifest.mjs",
     "predev": "node tools/generate-artwork-manifest.mjs",
@@ -23,8 +23,7 @@
     "next": "^16.4.0",
     "qrcode": "^1.5.4",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "zod": "^4.6.5"
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

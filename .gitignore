@@ -4,6 +4,12 @@ out/
 build/
 dist/
 coverage/
+
+# The supplied design bundle. ~72 MB of original PNGs; the build reads only the
+# generated derivatives under public/assets/, which are tracked. Kept on disk as
+# the design source of truth, but out of git — `npm run assets:prepare` is the
+# one script that needs it, and it is run deliberately, never by prebuild.
+assests/
 .DS_Store
 *.pem
 npm-debug.log*

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { access, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import sharp from 'sharp';
@@ -7,6 +7,24 @@ import sharp from 'sharp';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = join(root, 'public/assets/ui');
 await mkdir(output, { recursive: true });
+
+// `assests/` is gitignored: it is a ~72 MB design bundle, and the build only ever
+// reads the generated derivatives in public/assets/. A fresh clone therefore has
+// no originals, and this is the single script that needs them. Say so plainly
+// instead of failing later with an ENOENT stack pointing at a resize call.
+const bundle = join(root, 'assests');
+try {
+  await access(bundle);
+} catch {
+  console.error(
+    'Cannot prepare UI assets: the design bundle `assests/` is missing.\n' +
+      'It is gitignored by design (see .gitignore) and is not part of a fresh clone.\n' +
+      'Restore it from wherever the originals are kept, then re-run `npm run assets:prepare`.\n' +
+      'Nothing else needs it — `npm run build`, `npm test` and `npm run test:e2e` all\n' +
+      'read the generated derivatives already in public/assets/.',
+  );
+  process.exit(1);
+}
 
 // Original artwork stays untouched; only the curated production set is published.
 const sources = {
