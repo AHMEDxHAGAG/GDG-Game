@@ -15,7 +15,7 @@ const nextTs = Array.isArray(nextTypescript)
 
 const config = [
   {
-    ignores: ['.next/**', 'node_modules/**', 'out/**', 'coverage/**', 'next-env.d.ts'],
+    ignores: ['.next/**', '.next-no-project/**', 'node_modules/**', 'out/**', 'coverage/**', 'next-env.d.ts'],
   },
   js.configs.recommended,
   ...nextCore,
@@ -44,4 +44,3 @@ const config = [
 ];
 
 export default config;
-

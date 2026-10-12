@@ -141,6 +141,64 @@ export function toArabicDigits(value: number): string {
   return String(value).replace(/[0-9]/g, (digit) => '٠١٢٣٤٥٦٧٨٩'[Number(digit)] ?? digit);
 }
 
+/**
+ * Uppercase Roman numerals, for the poster's rank line.
+ *
+ * The reference card sets its rank in Roman (`#1 · IV نقطة`) rather than
+ * digits, which is what makes it read like a collector's card rather than a
+ * results screen. Scores here are 0–40, so `MM` is never reached and the
+ * subtractive forms (`IV`, `IX`) never apply — plain positional digits cover
+ * every value the quiz can produce.
+ */
+const ROMAN: readonly string[] = [
+  '',
+  'I',
+  'II',
+  'III',
+  'IV',
+  'V',
+  'VI',
+  'VII',
+  'VIII',
+  'IX',
+  'X',
+  'XI',
+  'XII',
+  'XIII',
+  'XIV',
+  'XV',
+  'XVI',
+  'XVII',
+  'XVIII',
+  'XIX',
+  'XX',
+  'XXI',
+  'XXII',
+  'XXIII',
+  'XXIV',
+  'XXV',
+  'XXVI',
+  'XXVII',
+  'XXVIII',
+  'XXIX',
+  'XXX',
+  'XXXI',
+  'XXXII',
+  'XXXIII',
+  'XXXIV',
+  'XXXV',
+  'XXXVI',
+  'XXXVII',
+  'XXXVIII',
+  'XXXIX',
+  'XL',
+];
+
+export function toRomanNumerals(value: number): string {
+  if (!Number.isInteger(value) || value < 0 || value >= ROMAN.length) return String(value);
+  return ROMAN[value] ?? String(value);
+}
+
 /** True when every track's copy came from the client-approved spec. */
 export function allContentIsSpecApproved(): boolean {
   return TRACK_IDS.every((id) => TRACK_CONTENT[id].contentSource === 'spec');

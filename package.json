@@ -15,9 +15,11 @@
     "pretest": "node tools/generate-artwork-manifest.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "tools/serve-without-supabase.sh",
+    "test:e2e:only": "playwright test"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "html-to-image": "^1.11.13",
     "lucide-react": "^1.54.0",
     "next": "^16.4.0",

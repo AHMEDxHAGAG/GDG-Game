@@ -44,6 +44,13 @@ export const storageKeys = {
   legacySession: 'gdgoc-pirate-expedition:session',
   /** Remembered username, so returning visitors keep their card identity. */
   username: 'gdgoc-pirate-quiz:username',
+  /**
+   * Retired bearer ID. Never adopt it into the credential-based identity: these
+   * IDs were exposed in public rosters and cannot prove device ownership.
+   */
+  visitorId: 'gdgoc-pirate-quiz:visitor-id',
+  /** Atomic public ID + secret device token; never include the token in rosters. */
+  visitorIdentity: 'gdgoc-pirate-quiz:visitor-identity-v2',
 } as const;
 
 /**

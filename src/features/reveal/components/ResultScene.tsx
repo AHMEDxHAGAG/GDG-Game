@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 
 import { ui } from '@/content/ui';
 import { getCharacter } from '@/config/characters';
+import { isSupabaseConfigured } from '@/lib/supabase/env';
 import { useQuiz } from '@/features/quiz/state/QuizProvider';
 import { resultRoute, trackIdFromRoute } from '@/lib/routes';
 import { ExpeditionBrand, NauticalBackground } from '@/components/shared/NauticalBackground';
 import { TrackEmblem } from '@/components/characters/TrackEmblem';
 import { ResultCard, type ResultCardHandle } from '@/features/reveal/components/ResultCard';
 import { ResultActions, useResultExport } from '@/features/reveal/components/ResultActions';
+import { CreateTeamCta } from '@/features/reveal/components/CreateTeamCta';
 import { TRACK_CONTENT } from '@/content/tracks';
 
 export interface ResultSceneProps {
@@ -98,10 +100,16 @@ export function ResultScene({ trackId }: ResultSceneProps): React.JSX.Element {
 
   const secondary = getCharacter(copy.secondaryTrackId);
 
+  // The create-team bar is fixed to the viewport, so the page has to reserve
+  // its height or it would sit on top of the last button in the stack.
+  const bottomInset = isSupabaseConfigured
+    ? 'pb-[8.5rem] sm:pb-[7.5rem]'
+    : 'pb-[max(2rem,env(safe-area-inset-bottom))]';
+
   return (
     <NauticalBackground scene="deck">
       <main
-        className="mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6"
+        className={`mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] ${bottomInset} sm:px-6`}
         data-scene="result"
       >
         <header className="flex items-center justify-between gap-3">
@@ -207,6 +215,9 @@ export function ResultScene({ trackId }: ResultSceneProps): React.JSX.Element {
           </div>
         </div>
       </main>
+      {/* Pinned above the fold, so reaching teams never costs a scroll past the
+          traits list. It carries its own bottom padding — see the note there. */}
+      <CreateTeamCta />
     </NauticalBackground>
   );
 }

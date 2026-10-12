@@ -103,7 +103,7 @@ function ResultCardInner(
             background: `radial-gradient(ellipse at 50% 40%, ${accent}40, transparent 60%), linear-gradient(180deg, #090f22bb, transparent 35%, #090f22 78%)`,
           }}
         />
-        <div className="absolute inset-x-[10%] top-[11%] flex items-center justify-between">
+        <div className="absolute inset-x-[10%] top-[11.3%] flex items-center justify-between">
           <span dir="ltr" className="flex flex-col leading-tight">
             <span className="font-brand text-[0.9em] font-bold text-text-primary">
               {ui.brand.organization}
@@ -113,8 +113,17 @@ function ResultCardInner(
             </span>
           </span>
           {match ? (
-            <span dir="ltr" className="text-[0.75em] font-bold text-text-secondary">
-              #{match.rank} · {ui.matches.scoreLabel(match.score)}
+            // Bright, not dim, and set in Roman numerals — the reference card
+            // treats this line as the one number on the poster meant to be read
+            // as a keepsake rather than a score. `posterRankLabel` exists for
+            // exactly this; the page header in `ResultScene` keeps ordinary
+            // digits, because a web page is not a poster.
+            //
+            // `//` and not a `/* */` block on purpose: a bare block comment here
+            // is a direct child of JSX, so React renders it as a literal text
+            // node and the export bakes the comment into the PNG.
+            <span dir="ltr" className="text-[0.82em] font-bold text-text-primary">
+              #{match.rank} · {ui.matches.posterRankLabel(match.score)}
             </span>
           ) : null}
         </div>
@@ -122,7 +131,7 @@ function ResultCardInner(
           <p
             dir="auto"
             data-testid="result-card-username"
-            className="absolute inset-x-[10%] top-[16%] text-center text-[0.95em] font-bold leading-tight text-text-primary break-words"
+            className="absolute inset-x-[10%] top-[16.5%] text-center text-[0.95em] font-bold leading-tight text-text-primary break-words"
           >
             {ui.card.usernamePrefix} {username}
           </p>
@@ -144,10 +153,11 @@ function ResultCardInner(
             className="absolute end-[6%] bottom-[12%] h-[20%] w-auto"
           />
         </div>
-        <div data-testid="poster-title" className="absolute inset-x-[10%] top-[62%] text-center">
+        {/* Line spacing below is matched against the reference by measuring rendered glyph bands, not by eye — the differences are under 1% of the card height, invisible in isolation but visible as the tagline crowding the frame. */}
+        <div data-testid="poster-title" className="absolute inset-x-[10%] top-[62.6%] text-center">
           <p className="text-[0.75em] font-bold text-text-secondary">{copy.eyebrow}</p>
           <h2
-            className="font-display text-[1.65em] font-black leading-[1.3]"
+            className="font-display text-[1.65em] font-black leading-[1.15]"
             style={{ color: accent }}
           >
             {copy.personaTitleAr}
@@ -161,7 +171,7 @@ function ResultCardInner(
         </div>
         <p
           data-testid="poster-tagline"
-          className="absolute inset-x-[10%] bottom-[14%] text-center text-[0.85em] font-bold leading-[1.4] text-text-primary"
+          className="absolute inset-x-[10%] bottom-[13.3%] text-center text-[0.85em] font-bold leading-[1.4] text-text-primary"
         >
           {copy.taglineAr}
         </p>

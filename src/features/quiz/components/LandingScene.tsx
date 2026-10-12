@@ -9,6 +9,7 @@ import { ui } from '@/content/ui';
 import { UI_ASSETS } from '@/config/ui-assets';
 import { CHARACTER_LIST } from '@/config/characters';
 import { MAX_USERNAME_LENGTH } from '@/config/site';
+import { useVisitor } from '@/features/teams/visitor';
 import { useQuiz } from '@/features/quiz/state/QuizProvider';
 import { resultRoute } from '@/lib/routes';
 import { ExpeditionBrand, NauticalBackground } from '@/components/shared/NauticalBackground';
@@ -29,12 +30,25 @@ export function LandingScene(): React.JSX.Element {
   const router = useRouter();
   const { state, isHydrated, canResume, enterPhase, setUsername, start, resume, restart, clearSession } =
     useQuiz();
+  const { saveName } = useVisitor();
   const [erased, setErased] = useState(false);
   const inputId = useId();
 
   useEffect(() => {
     if (isHydrated) enterPhase('landing');
   }, [isHydrated, enterPhase]);
+
+  /*
+   * One name, entered once, used by both the card and any room.
+   *
+   * `saveName` is debounced inside the visitor provider, so calling it on every
+   * keystroke is safe — writing through from here directly would be one RPC per
+   * character typed.
+   */
+  const handleNameChange = (value: string) => {
+    setUsername(value);
+    saveName(value);
+  };
 
   /**
    * Each route mounts its own provider, so a state change is not a navigation:
@@ -173,7 +187,7 @@ export function LandingScene(): React.JSX.Element {
                 id={inputId}
                 value={state.username ?? ''}
                 onChange={(event) =>
-                  setUsername(event.target.value.slice(0, MAX_USERNAME_LENGTH))
+                  handleNameChange(event.target.value.slice(0, MAX_USERNAME_LENGTH))
                 }
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
@@ -193,7 +207,7 @@ export function LandingScene(): React.JSX.Element {
               <PirateButton
                 variant="secondary"
                 onClick={() => {
-                  setUsername(null);
+                  handleNameChange('');
                   handleStart();
                 }}
                 icon={<SkipForward className="size-4" />}

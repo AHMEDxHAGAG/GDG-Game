@@ -1,5 +1,7 @@
 node_modules/
 .next/
+# Build output for the project-less e2e server; see tools/serve-without-supabase.sh
+.next-no-project/
 out/
 build/
 dist/

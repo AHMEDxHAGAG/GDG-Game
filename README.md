@@ -10,10 +10,13 @@ not necessarily the top one. They then get a downloadable card showing **their
 username and the chosen track**.
 
 Scoring is a pure, synchronous function that runs entirely in the browser.
-There is no AI, no server, no API key, and nothing leaves the device.
+There is no AI and no model provider — the ranking is arithmetic over a
+hand-authored question bank. Answers never leave the device; the only thing
+that does is the **name** a visitor gives and the room they join it to.
 
 ```
-Landing → Quiz Q1..Q10 → Analyzing → Ranked matches → Pick one → Card → Download PNG
+Landing → Quiz Q1..Q10 → Analyzing → Ranked matches → Pick one → Card
+       → Create Team → Name → Create or join a room
 ```
 
 - Design source of truth: `assests/UI/` (spec bundle + reference screenshots)
@@ -22,6 +25,8 @@ Landing → Quiz Q1..Q10 → Analyzing → Ranked matches → Pick one → Card 
   documented in `docs/UI_ASSET_REVAMP.md`. The card is an identity poster; full
   strengths, traits, and recommendations appear on the result page.
 - Projector screen at `/present` with a configurable QR code.
+- No accounts and no sign-in. A visitor is a **name** plus a device-local id;
+  rooms of four are backed by Supabase — see [Rooms](#rooms).
 - Session resume, RTL-safe Arabic/English copy, reduced-motion support, and a
   client-side 1080×1350 PNG export.
 
@@ -50,11 +55,122 @@ would otherwise render as tofu in the Arabic UI.
 
 ## Environment variables
 
+Copy `.env.example` to `.env.local`. **Every variable is optional** — with none
+of them set the quiz, the card and the gallery all run offline and the team
+screens say so instead of failing.
+
 | Variable | Purpose | Default |
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | Absolute URL encoded in the `/present` QR code | Current origin at runtime, so `npm run dev` works with no config |
+| `NEXT_PUBLIC_SUPABASE_URL` | Your project URL, e.g. `https://abc.supabase.co` | Unset — rooms are off |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable (`sb_publishable_…`) or legacy `anon` key | Unset — rooms are off |
 
-No API keys are required — scoring runs fully offline.
+Both Supabase values are on **Project Settings → API** in the dashboard. Use the
+publishable key, never the secret key: every `NEXT_PUBLIC_` variable is shipped
+to the browser.
+
+The key is used purely as an **anonymous** key. There is no login to
+authenticate, and the database grants that role nothing but `EXECUTE` on six
+room functions — it cannot read a single table.
+
+## Rooms
+
+The quiz needs no server. Recording a name and a room does.
+
+### Who a visitor is
+
+A **name**, a public random ID, and a separate secret device token, generated
+with cryptographic randomness and stored together in localStorage. There is no
+password, OAuth provider, or server session. When storage is blocked, identity
+stays stable in memory for the lifetime of the page.
+
+Room rosters expose only public IDs. Every mutation validates the separate token
+against its SHA-256 hash in the database; neither the token nor its hash appears
+in an RPC response. Access to another device's localStorage still permits acting
+as that visitor, so this remains device-local identity, not account security.
+
+The credential migration intentionally does **not** adopt old visitor IDs:
+those bearer IDs were public and cannot prove ownership. Existing room data is
+preserved, but returning devices start new identities (keeping their quiz and
+remembered names); old memberships cannot be recovered using just an old ID.
+Apply the new migration and deploy the updated client together.
+
+### The four-person, one-track-each rule
+
+A room holds **at most four members, each on a different track**. There are five
+tracks and four seats, so a room always leaves exactly one persona on the
+bench. Enforced **in the database**, not the UI:
+
+| Mechanism | Rejects |
+|---|---|
+| `room_members_one_track_per_room` (unique index) | A second member on a track |
+| `room_members_cap_four` (trigger) | The fifth member |
+| `join_room` (RPC) | Both, with a named error the UI can speak |
+
+Both the join RPC and capacity trigger lock the parent room row before counting
+or inserting seats, serializing concurrent joins to the same room.
+
+The app mirrors both so a visitor gets a sentence in Arabic rather than a
+constraint-violation stack trace: `الروم كاملة — أربع ناس max` versus
+`في حد في الروم ده ماسك المسار بتاعك`.
+
+### Access model
+
+`anon` holds **no table privileges at all** — not even `SELECT`. Every read and
+write goes through a `SECURITY DEFINER` function, which is what lets the rules
+live in one place instead of being re-implemented in the UI and bypassed by
+anyone using the REST API directly.
+
+RLS is still enabled on all three tables. There are no policies because there
+are no grants to gate; leaving it on means a future `GRANT` that forgets to
+think about access fails closed instead of exposing every name in the database.
+
+### Live roster
+
+The room screen polls every five seconds. It does **not** use Realtime
+`postgres_changes`, because a subscription needs `SELECT` on `room_members` —
+which is the one thing the access model exists to prevent, since it would let
+anyone enumerate every membership. Five seconds on a four-seat room is
+imperceptible.
+
+### Setup
+
+1. **Apply the schema.** Run the files in `supabase/migrations/` in order via
+   the dashboard's SQL editor or `supabase db push`. Apply each migration once;
+   do not replay the historical teardown migrations over an existing project.
+
+2. **Point the app at the project** — the two `NEXT_PUBLIC_SUPABASE_*` values
+   above. Restart `npm run dev`; they are read at build time.
+
+There is no provider to enable and no redirect URL to register.
+
+### Verify it against the real database
+
+```bash
+PGPASSWORD=… psql "host=aws-0-<region>.pooler.supabase.com dbname=postgres \
+  user=postgres.<project-ref> sslmode=require" -f tools/verify-team-rules.sql
+```
+
+Checks the rule set, every refusal, and the access model against real rows,
+then rolls back. It calls the RPCs as `anon` — the role the browser actually
+uses — so a function that quietly depended on privileges the app does not have
+fails here rather than in someone's browser.
+
+For the last-seat race, use a disposable migrated database with `PGHOST`,
+`PGPORT`, `PGDATABASE`, and `PGUSER` configured, then run:
+
+```bash
+python3 tools/verify-room-concurrency.py
+```
+
+It checks overlapping joins through both the RPC and capacity trigger using
+different free tracks, then removes only its randomly generated fixtures.
+
+### Without credentials
+
+Unset both Supabase variables and the app behaves exactly as it did before:
+no Create Team bar on the result screen, and `/create-groups` and `/team`
+explain that rooms are not switched on rather than offering a dead end.
 
 ## How the scoring works
 
@@ -75,11 +191,13 @@ distribution.
 
 | Route | Purpose |
 |---|---|
-| `/` | Landing — hero, five personas, optional username, start |
+| `/` | Landing — hero, five personas, optional name, start |
 | `/quiz` | The ten MCQs |
 | `/analyzing` | Scoring beat |
 | `/matches` | Ranked 1st–5th; the visitor chooses |
-| `/result/[trackId]` | Card for the chosen track |
+| `/result/[trackId]` | Card for the chosen track, plus the Create Team bar |
+| `/create-groups` | Your name, then create a room or join one by its code |
+| `/team/[code]` | The room: roster, join code, owner rename |
 | `/tracks` | Five-persona gallery |
 | `/present` | Projector screen with QR |
 
@@ -91,7 +209,7 @@ Next.js App Router filename.
 ```text
 src/
   app/                 # page, quiz, analyzing, matches, result/[trackId],
-                       # tracks, present
+                       # tracks, present, create-groups, team/[code]
   components/
     characters/        # CharacterArtwork, CharacterPortrait, TrackEmblem
     shared/            # NauticalBackground, ParchmentPanel, PirateButton, art
@@ -102,16 +220,20 @@ src/
   features/
     quiz/              # types, scoring, reducer, provider, storage, screens
     matches/           # ranked matches screen
+    teams/             # visitor identity, room api, room screens
     tracks/            # gallery screen
-    reveal/            # ResultScene, ResultCard (PNG export), ResultActions
-  config/              # characters (the five personas), site
+    reveal/            # ResultScene, ResultCard (PNG export), ResultActions,
+                       # CreateTeamCta
+  config/              # characters (the five personas), site, team
   generated/           # artwork manifest and UI asset catalogue — generated
-  lib/                 # ids, typed route builders
+  lib/                 # ids, typed route builders, join codes, supabase client
 assests/               # supplied design source — do not modify
 public/assets/characters/  # originals and responsive WebPs, named by TrackId
 public/assets/ui/      # curated scene, control, emblem, and poster derivatives
+supabase/migrations/   # visitors + rooms schema and the room RPCs
 docs/                  # AGENT_CONTEXT, OVERHAUL_IMPLEMENTATION_PLAN
-tools/                 # artwork manifest generator, copy checker
+tools/                 # artwork manifest generator, copy checker,
+                       # verify-team-rules.sql (rule + access verification)
 e2e/                   # Playwright specs
 ```
 

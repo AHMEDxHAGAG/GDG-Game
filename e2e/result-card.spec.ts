@@ -103,6 +103,34 @@ test.describe('result card', () => {
   });
 
   /**
+   * A bare block comment written directly inside JSX becomes a child of the
+   * element, so React renders it as a literal text node and `toPng` bakes it
+   * into the exported image. It type-checks, passes lint, and looks correct in
+   * the editor — the comment ships inside the artefact, which is why this walks
+   * the rendered tree rather than grepping the source for the syntax.
+   */
+  test('renders no stray text nodes from JSX comments', async ({ page }) => {
+    await chooseAndOpenCard(page, 0);
+    const strays = await page.evaluate(() => {
+      const card = document.querySelector('[data-testid="result-card"]');
+      if (!card) return ['CARD MISSING'];
+      const found: string[] = [];
+      const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+      // Copy on every visible text element; a bare block comment lands on a
+      // container instead, which is what this is looking for.
+      const copyTags = ['P', 'SPAN', 'H1', 'H2', 'H3', 'H4', 'BUTTON', 'EM', 'STRONG'];
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const text = (node.textContent ?? '').trim();
+        if (!text) continue;
+        const tag = node.parentElement?.tagName ?? '?';
+        if (!copyTags.includes(tag)) found.push(`${tag}: ${text.slice(0, 100)}`);
+      }
+      return found;
+    });
+    expect(strays, `stray nodes inside the card: ${strays.join(' | ')}`).toEqual([]);
+  });
+
+  /**
    * The card frame is `overflow-hidden` at a fixed aspect ratio, so content
    * that is too tall is *clipped and lost* — not scrolled. That silently ate
    * the traits and the secondary-track card once already, so the fit is

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Cairo, Space_Grotesk, Tajawal } from 'next/font/google';
 
 import { site } from '@/config/site';
+import { VisitorProvider } from '@/features/teams/visitor';
 import './globals.css';
 
 // Arabic headings. `display: 'swap'` keeps first paint unblocked, but the
@@ -75,7 +76,11 @@ export default function RootLayout({
       className={`${cairo.variable} ${tajawal.variable} ${grotesk.variable}`}
     >
       <body className="bg-background text-text-primary">
-        {children}
+        {/*
+          One provider for the whole tree. It owns the visitor id and the name
+          behind it — the whole of a visitor's identity, since there is no login.
+        */}
+        <VisitorProvider>{children}</VisitorProvider>
         <footer className="border-t border-surface-border/40 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-center">
           <a
             href={site.authorGitHub}
