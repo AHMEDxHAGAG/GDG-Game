@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run against a disposable migrated DB using psql's PG* connection variables.
 
-Two sessions compete for the last seat with different unused tracks. Checks
+Two sessions compete for the last seat with distinct or shared tracks. Checks
 both join_room and direct inserts (the capacity trigger). Deletes only the
 random fixture visitors/rooms this script creates, including on failure.
 """
@@ -18,11 +18,12 @@ def query(sql):
     return subprocess.run(PSQL, input=sql, text=True, capture_output=True, check=True).stdout.strip()
 
 
-def verify(direct_insert):
+def verify(direct_insert, shared_track):
     ids = [str(uuid.uuid4()) for _ in range(5)]
     tokens = [str(uuid.uuid4()) for _ in ids]
     sessions = []
     label = "trigger" if direct_insert else "join RPC"
+    label += " (shared tracks)" if shared_track else " (distinct tracks)"
     try:
         for index, (visitor, token) in enumerate(zip(ids, tokens)):
             query(f"select public.claim_visitor('{visitor}', '{token}', 'Race {index}');")
@@ -30,9 +31,13 @@ def verify(direct_insert):
             f"select row_to_json(public.create_room('{ids[0]}', '{tokens[0]}', 'Race Crew', 'software-engineering'));"
         ))
         for index, track in [(1, "ai"), (2, "web-development")]:
+            if shared_track:
+                track = "software-engineering"
             query(f"select public.join_room('{ids[index]}', '{tokens[index]}', '{room['join_code']}', '{track}');")
 
         def join(index, track):
+            if shared_track:
+                track = "software-engineering"
             if direct_insert:
                 return ("insert into public.room_members (room_id, visitor_id, track_id) "
                         f"values ('{room['id']}', '{ids[index]}', '{track}');")
@@ -82,5 +87,6 @@ def verify(direct_insert):
 
 
 if __name__ == "__main__":
-    verify(False)
-    verify(True)
+    for shared_track in [False, True]:
+        verify(False, shared_track)
+        verify(True, shared_track)

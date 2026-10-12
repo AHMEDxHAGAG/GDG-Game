@@ -8,8 +8,7 @@
  * the whole job of the verification script in `tools/`, which asserts the cap
  * against a real database rather than trusting the number to match.
  *
- * Four people, each on a different track: there are five tracks, so a room
- * always leaves exactly one persona on the bench.
+ * Four people maximum. Teammates may share a track.
  */
 export const ROOM_CAPACITY = 4;
 

@@ -19,7 +19,7 @@ const copy = {
  * covered here is the screen's own behaviour: it refuses to open before the
  * quiz is finished, and it never mounts without an identity to attach.
  *
- * The full rule set — the cap of four, one track each, every refusal, and the
+ * The full rule set — the cap of four, shared tracks, every refusal, and the
  * fact that `anon` can reach none of it directly — is covered against a real
  * database instead; see `tools/verify-team-rules.sql`.
  */

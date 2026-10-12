@@ -35,22 +35,25 @@ select join_code as code from public.rooms where id = :'room_id' \gset
 
 select pg_temp.assert_true('creating a room preserves the personal name',
   (select display_name = 'Pirate 1' from public.visitors where id = :'owner_id'));
-select public.join_room(id, token, :'code',
-  case n when 2 then 'ai' when 3 then 'web-development' else 'data-science' end::public.track_id)
+select public.join_room(id, token, :'code', 'software-engineering')
 from fixtures where n between 2 and 4 order by n;
-select pg_temp.assert_true('four distinct seats',
+select pg_temp.assert_true('four visitors can share a track',
   jsonb_array_length(public.get_room(:'code') -> 'members') = 4);
+select pg_temp.assert_true('all four members kept their shared track',
+  (select count(*) from jsonb_array_elements(public.get_room(:'code') -> 'members') m
+   where m ->> 'track_id' = 'software-engineering') = 4);
 
 select pg_temp.expect_error('fifth seat', format(
-  'select public.join_room(%L, %L, %L, %L)', :'stranger_id', :'stranger_token', :'code', 'cybersecurity'), 'room_full');
+  'select public.join_room(%L, %L, %L, %L)', :'stranger_id', :'stranger_token', :'code', 'software-engineering'), 'room_full');
 select pg_temp.expect_error('duplicate membership', format(
   'select public.join_room(%L, %L, %L, %L)', :'owner_id', :'owner_token', :'code', 'ai'), 'already_joined');
 select pg_temp.expect_error('blank room name', format(
   'select public.create_room(%L, %L, %L, %L)', :'owner_id', :'owner_token', ' ', 'ai'), 'invalid_name');
 
 select (public.create_room(:'owner_id', :'owner_token', 'Other Crew', 'software-engineering')).join_code as other_code \gset
-select pg_temp.expect_error('duplicate track', format(
-  'select public.join_room(%L, %L, %L, %L)', :'stranger_id', :'stranger_token', :'other_code', 'software-engineering'), '23505');
+select public.join_room(:'stranger_id', :'stranger_token', :'other_code', 'software-engineering');
+select pg_temp.assert_true('a second visitor on the owner track can join',
+  jsonb_array_length(public.get_room(:'other_code') -> 'members') = 2);
 select pg_temp.expect_error('unclaimed creator', format(
   'select public.create_room(%L, %L, %L, %L)', gen_random_uuid(), gen_random_uuid(), 'Crew', 'ai'), 'unknown_visitor');
 

@@ -95,24 +95,23 @@ preserved, but returning devices start new identities (keeping their quiz and
 remembered names); old memberships cannot be recovered using just an old ID.
 Apply the new migration and deploy the updated client together.
 
-### The four-person, one-track-each rule
+### The four-person capacity rule
 
-A room holds **at most four members, each on a different track**. There are five
-tracks and four seats, so a room always leaves exactly one persona on the
-bench. Enforced **in the database**, not the UI:
+A room holds **at most four members**. Multiple teammates may share the same
+track. Capacity and one membership per visitor are enforced **in the database**,
+not just the UI:
 
 | Mechanism | Rejects |
 |---|---|
-| `room_members_one_track_per_room` (unique index) | A second member on a track |
+| `room_members_pkey` (primary key) | The same visitor joining twice |
 | `room_members_cap_four` (trigger) | The fifth member |
-| `join_room` (RPC) | Both, with a named error the UI can speak |
+| `join_room` (RPC) | Duplicate membership or a full room, with a named error |
 
 Both the join RPC and capacity trigger lock the parent room row before counting
 or inserting seats, serializing concurrent joins to the same room.
 
-The app mirrors both so a visitor gets a sentence in Arabic rather than a
-constraint-violation stack trace: `الروم كاملة — أربع ناس max` versus
-`في حد في الروم ده ماسك المسار بتاعك`.
+The app reports a full room in Arabic rather than a constraint-violation stack
+trace: `الروم كاملة — أربع ناس max`.
 
 ### Access model
 
@@ -164,7 +163,7 @@ python3 tools/verify-room-concurrency.py
 ```
 
 It checks overlapping joins through both the RPC and capacity trigger using
-different free tracks, then removes only its randomly generated fixtures.
+both different and shared tracks, then removes only its randomly generated fixtures.
 
 ### Without credentials
 

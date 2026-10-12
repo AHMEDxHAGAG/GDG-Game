@@ -39,7 +39,6 @@ export type RoomErrorCode =
   | 'invalid_code'
   | 'room_not_found'
   | 'room_full'
-  | 'track_taken'
   | 'already_joined'
   | 'not_room_owner'
   | 'unexpected';
@@ -47,9 +46,6 @@ export type RoomErrorCode =
 export type RoomResult<T> =
   | { readonly ok: true; readonly data: T }
   | { readonly ok: false; readonly error: RoomErrorCode };
-
-/** Postgres unique-violation SQLSTATE. */
-const UNIQUE_VIOLATION = '23505';
 
 /**
  * PostgREST wraps a raised exception as
@@ -76,20 +72,6 @@ export function classifyRoomError(error: {
   const matched = known.find((code) => haystack.includes(code));
   if (matched) return matched;
 
-  /*
-   * The one-track-per-room rule is an index, not a RAISE, so it comes back as a
-   * bare unique violation with none of our markers in the payload. It still has
-   * to read as "that track is taken" rather than "something went wrong",
-   * because it is the single most likely refusal a visitor hits — more likely
-   * than a full room, because four of the five tracks being taken is easy to
-   * reach by accident.
-   */
-  if (
-    error.code === UNIQUE_VIOLATION ||
-    haystack.includes('room_members_one_track_per_room')
-  ) {
-    return 'track_taken';
-  }
   return 'unexpected';
 }
 

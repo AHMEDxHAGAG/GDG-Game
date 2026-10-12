@@ -32,21 +32,8 @@ describe('classifyRoomError', () => {
     expect(classifyRoomError({ message: 'failed', details: 'room_full' })).toBe('room_full');
   });
 
-  /*
-   * The one-track-per-room rule is an index, not a RAISE, so it comes back as a
-   * bare unique violation with no marker of ours in the payload. It is also the
-   * refusal a visitor is most likely to hit — four of five tracks taken is easy
-   * to reach by accident — so it has to read as "that track is taken" rather
-   * than "something went wrong".
-   */
-  it('maps a unique violation to track_taken', () => {
-    expect(classifyRoomError({ code: '23505' })).toBe('track_taken');
-    expect(
-      classifyRoomError({
-        code: '23505',
-        message: 'duplicate key value violates unique constraint "room_members_one_track_per_room"',
-      }),
-    ).toBe('track_taken');
+  it('does not treat a generic unique violation as a track restriction', () => {
+    expect(classifyRoomError({ code: '23505' })).toBe('unexpected');
   });
 
   it('falls back to something honest when nothing is recognised', () => {
@@ -104,6 +91,15 @@ describe('toRoomWithRoster', () => {
   it('reports ownership relative to whoever is looking', () => {
     expect(toRoomWithRoster(payload, 'visitor-2')?.room.isOwner).toBe(false);
     expect(toRoomWithRoster(payload, 'visitor-9')?.room.isOwner).toBe(false);
+  });
+
+  it('keeps multiple visitors on the same track in the roster', () => {
+    const roster = toRoomWithRoster({
+      ...payload,
+      members: payload.members.map((member) => ({ ...member, track_id: 'ai' })),
+    }, 'visitor-1');
+    expect(roster?.members.map((member) => member.visitorId)).toEqual(['visitor-1', 'visitor-2']);
+    expect(roster?.members.map((member) => member.trackId)).toEqual(['ai', 'ai']);
   });
 
   /*

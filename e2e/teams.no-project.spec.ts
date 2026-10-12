@@ -21,7 +21,7 @@ const copy = {
  * `playwright.config.ts` and the `test:e2e` script. Those variables are inlined
  * at build time, so there is no way to unset them from inside a test.
  *
- * The full rule set — the cap of four, one track each, every refusal, and the
+ * The full rule set — the cap of four, shared tracks, every refusal, and the
  * fact that `anon` can reach none of it directly — is covered against a real
  * database instead; see `tools/verify-team-rules.sql`.
  */

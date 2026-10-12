@@ -9,7 +9,7 @@ import { classifyRoomError, toRoomWithRoster, type Room, type RoomResult, type R
  *
  * All of them go through the database RPCs, because `anon` — the role this code
  * runs as — has no table privileges at all. That is the whole access model: the
- * cap of four and one-track-each are checked where they cannot be skipped, and
+ * capacity and device credentials are checked where they cannot be skipped, and
  * the client only ever renders the verdict.
  *
  * Public visitor IDs identify roster members. Mutations additionally require a
